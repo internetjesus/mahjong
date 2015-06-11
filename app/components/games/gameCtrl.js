@@ -21,14 +21,6 @@ angular.module('mahjong.games')
         };
 
         /**
-         * Spectate a game
-         * @param id
-         */
-        $scope.spectateGame = function(id) {
-
-        };
-
-        /**
          * Join a game
          * @param id
          */
