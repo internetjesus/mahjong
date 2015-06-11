@@ -1,0 +1,22 @@
+{
+  "name": "mahjong",
+  "version": "1.0.0",
+  "authors": [
+    "Jens Hoevenaars <jens_h@live.nl>"
+  ],
+  "description": "This is an awesome game of mahjong written in AngularJS",
+  "main": "index.html",
+  "keywords": [
+    "mahjong"
+  ],
+  "license": "MIT",
+  "homepage": "www.github.com/internetjesus/mahjong",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+}

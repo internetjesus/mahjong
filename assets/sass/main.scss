@@ -1,0 +1,76 @@
+@import "../../node_modules/bootstrap-sass/assets/stylesheets/bootstrap";
+@import "variables";
+@import "mixins";
+
+body {
+  padding-top: 90px;
+}
+
+table {
+  thead {
+    tr {
+      td {
+        font-weight: bold;
+
+        a {
+          color: #333333;
+          cursor: pointer;
+        }
+      }
+    }
+  }
+}
+
+.form-header {
+  @extend .page-header;
+  margin-top: 10px;
+}
+
+.static-form {
+  .form-group {
+    margin-bottom: 0px;
+  }
+}
+
+.nav-auth {
+  margin-left: 20px;
+}
+
+.filter {
+  .panel-body {
+    padding: 10px 30px 10px 30px;
+  }
+}
+
+.pagination {
+  width: auto;
+}
+
+.table-footer {
+  text-align: center;
+}
+
+.game-board {
+  position: relative;
+  height: 700px;
+}
+
+.tile {
+  @include box-shadow(5px, 5px, 12px);
+  width: $icon-width;
+  height: $icon-height;
+  background-image: $icons;
+  padding: 5px;
+  border: 1px solid black;
+  position: absolute;
+  background: white;
+}
+
+//.Circle { background-position: -($icon-width) -($icon-height * 2);  }
+//.Dragon { background-position: -($icon-width * 5) -($icon-height * 1);  }
+//.Character { background-position: -($icon-width * 5) -($icon-height * 1);  }
+//.Bamboo { background-position: -($icon-width * 2) -($icon-height * 2);  }
+//.Flower { background-position: -($icon-width * 10) -($icon-height * 2);  }
+//.Wind { background-position: -($icon-width * 5) -($icon-height * 1);  }
+
+

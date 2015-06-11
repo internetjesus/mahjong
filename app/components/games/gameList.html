@@ -1,0 +1,113 @@
+<div class="row">
+    <div class="col-md-9">
+        <table class="table table-responsive">
+            <thead>
+            <tr>
+                <td>
+                    <a ng-click="sortType = 'gameTemplate.id'; sortReverse = !sortReverse">
+                        Template
+                        <span ng-show="sortType == 'gameTemplate.id' && !sortReverse" class="glyphicon glyphicon-chevron-down"></span>
+                        <span ng-show="sortType == 'gameTemplate.id' && sortReverse" class="glyphicon glyphicon-chevron-up"></span>
+                    </a>
+                </td>
+                <td>
+                    <a ng-click="sortType = 'players.length'; sortReverse = !sortReverse">
+                        Total players
+                        <span ng-show="sortType == 'players.length' && !sortReverse" class="glyphicon glyphicon-chevron-down"></span>
+                        <span ng-show="sortType == 'players.length' && sortReverse" class="glyphicon glyphicon-chevron-up"></span>
+                    </a>
+                </td>
+                <td>
+                    <a ng-click="sortType = 'createdBy.name'; sortReverse = !sortReverse">
+                        Owner
+                        <span ng-show="sortType == 'createdBy.name' && !sortReverse" class="glyphicon glyphicon-chevron-down"></span>
+                        <span ng-show="sortType == 'createdBy.name' && sortReverse" class="glyphicon glyphicon-chevron-up"></span>
+                    </a>
+                </td>
+                <td>
+                    <a ng-click="sortType = 'createdOn'; sortReverse = !sortReverse">
+                        Created on
+                        <span ng-show="sortType == 'createdOn' && !sortReverse" class="glyphicon glyphicon-chevron-down"></span>
+                        <span ng-show="sortType == 'createdOn' && sortReverse" class="glyphicon glyphicon-chevron-up"></span>
+                    </a>
+                </td>
+                <td>
+                    <a ng-click="sortType = 'state'; sortReverse = !sortReverse">
+                        State
+                        <span ng-show="sortType == 'state' && !sortReverse" class="glyphicon glyphicon-chevron-down"></span>
+                        <span ng-show="sortType == 'state' && sortReverse" class="glyphicon glyphicon-chevron-up"></span>
+                    </a>
+                </td>
+                <td>
+                    <a ng-click="sortType = 'startedOn'; sortReverse = !sortReverse">
+                        Started on
+                        <span ng-show="sortType == 'startedOn' && !sortReverse" class="glyphicon glyphicon-chevron-down"></span>
+                        <span ng-show="sortType == 'startedOn' && sortReverse" class="glyphicon glyphicon-chevron-up"></span>
+                    </a>
+                </td>
+                <td></td>
+            </tr>
+            </thead>
+            <tbody>
+            <tr ng-repeat="game in games | orderBy:sortType:sortReverse | filter:gamesFilter">
+                <td>{{ game.gameTemplate.id }}</td>
+                <td>{{ game.players.length }}</td>
+                <td>{{ game.createdBy.name }}</td>
+                <td>{{ game.createdOn | date:'medium'}}</td>
+                <td>{{ game.state }}</td>
+                <td>{{ game.startedOn | date:'medium'}}</td>
+                <td>
+                    <div class="btn-group btn-group-sm" role="group">
+                        <a type="button" ng-click="joinGame(game._id)" class="btn btn-sm btn-primary">Join</a>
+                        <a ui-sref="mahjong.view({gameId : game._id})" type="button" class="btn btn-default">Spectate</a>
+                    </div>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+        <!--<nav class="table-footer">-->
+            <!--<pagination total-items="bigTotalItems" ng-model="bigCurrentPage" max-size="maxSize" class="pagination-sm" boundary-links="true" rotate="false" num-pages="numPages"></pagination>-->
+        <!--</nav>-->
+    </div>
+    <div class="col-md-3">
+        <div class="filter panel panel-default">
+            <div class="panel-heading">
+                <h5>Filter</h5>
+            </div>
+            <div class="panel-body">
+                <form class="form-horizontal">
+                    <div class="form-group">
+                        <label>Username</label>
+                        <input type="text" ng-model="gamesFilter.createdBy.name" placeholder="Username" class="form-control" />
+                    </div>
+                    <div class="form-group">
+                        <label>Template</label>
+                        <choose-template></choose-template>
+                    </div>
+                    <div class="form-group">
+                        <label>State</label>
+                        <div class="checkbox">
+                            <label>
+                                <input type="checkbox" ng-model="gamesFilter.state" value="open" />
+                                Playing
+                            </label>
+                        </div>
+                        <div class="checkbox">
+                            <label>
+                                <input type="checkbox" ng-model="gamesFilter.state" value="playing" />
+                                Finished
+                            </label>
+                        </div>
+                        <div class="checkbox">
+                            <label>
+                                <input type="checkbox" ng-model="gamesFilter.state" value="finished" />
+                                Open
+                            </label>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="panel-footer"></div>
+        </div>
+    </div>
+</div>
