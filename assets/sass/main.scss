@@ -26,6 +26,11 @@ table {
   margin-top: 10px;
 }
 
+.page-header-small {
+  @extend .page-header;
+  margin-top: 0px;
+}
+
 .static-form {
   .form-group {
     margin-bottom: 0px;

@@ -138,7 +138,7 @@ angular.module('mahjong').config(['$stateProvider', '$urlRouterProvider', functi
                         return r;
                     }, function(r) {
                         ngToast.create({className: 'warning', content: r.data.message});
-                        $state.go('mahjong.games');
+                        return null;
                     });
                 }]
             },
@@ -200,22 +200,129 @@ angular.module('mahjong.games')
 /**
  * Game View Controller
  */
-angular.module('mahjong.games').controller('GameViewController', ['$scope', 'game', 'players', 'tiles', function($scope, game, players, tiles) {
+angular.module('mahjong.games').controller('GameViewController', [
+    '$scope',
+    'game',
+    'players',
+    'tiles',
+    'gameFactory',
+    'ngToast',
+    'socket',
+    'config',
+    function($scope, game, players, tiles, gameFactory, ngToast, socket, config) {
+
+    /**
+     * The game object.
+     * @type Object
+     */
     $scope.game     = game.data;
+
+    /**
+     * The players (this is in a different variable because we append players
+     * to it from the socket
+     * @type Object
+     */
     $scope.players  = players.data;
-    $scope.tiles    = tiles.data;
+
+    // Check if the tiles are represent!
+    if (typeof(tiles) == 'object' && tiles != null) {
+        $scope.tiles = tiles.data;
+    }
+
+    /**
+     * Start the game
+     */
+    $scope.startGame = function()
+    {
+        gameFactory.start($scope.game._id).then(function(res) {
+            ngToast.create({className: 'success', content: res.data});
+        }, function(res) {
+            ngToast.create({className: 'warning', content: res.data.message});
+        });
+    };
+
+    /**
+     * Test socket
+     */
+    $scope.testSocket = function()
+    {
+        gameFactory.test($scope.game._id, 'match').then(function(res) {
+            console.log('Response from test request', res);
+        });
+    };
+
+    var socketEndPoint = config.apiUrl + '?gameId='+$scope.game._id;
+    socket.initialize(io(socketEndPoint));
+
+    /**
+     * Listen to start event on socket
+     */
+    socket.on('start', function(res) {
+        // Load game tiles
+        ngToast.create({className: 'info', content: 'Game started! Loading tiles...'});
+
+        gameFactory.getGameTiles($scope.game._id).then(function(res) {
+            $scope.tiles = res.data;
+
+            ngToast.create({className: 'info', content: 'Tiles loaded! Enjoy the game'});
+        });
+    });
+
+    /**
+     * Listen to game end event
+     */
+    socket.on('end', function(res) {
+        console.log('Game has ended! Response from server:', res);
+    });
+
+    /**
+     * Listen to player joined event
+     */
+    socket.on('playerJoined', function(res) {
+        console.log('Player joined this game! Response from server:', res);
+    });
+
+    /**
+     * Listen to match even
+     */
+    socket.on('match', function(res) {
+        console.log('A match has been made! Response from server:', res);
+    });
 }]);
 
 /**
  * Game Create Controller
  */
-angular.module('mahjong.games').controller('GameCreateController', ['$scope', function($scope) {
+angular.module('mahjong.games').controller('GameCreateController', ['$scope', '$state', 'gameFactory', 'ngToast', function($scope, $state, gameFactory, ngToast) {
 
+    /**
+     * The new game object
+     * @type {{}}
+     */
+    $scope.game = {};
+
+    /**
+     * Create a new game
+     * @param form
+     */
+    $scope.createGame = function(isValid) {
+
+        if (isValid) {
+            gameFactory.createNew($scope.game.templateName, $scope.game.minPlayers, $scope.game.maxPlayers).then(function(response) {
+
+                $state.go('mahjong.view', { gameId : response.data._id });
+                // ngToast
+                // Redirect: response.data._id
+            }, function(response) {
+                console.log('het ging fout', response);
+            });
+        }
+    }
 }]);
 /**
  * Game factory
  */
-angular.module('mahjong.games').factory('gameFactory', ['config', '$http', function(config, $http) {
+angular.module('mahjong.games').factory('gameFactory', ['config', '$http', '$q', function(config, $http, $q) {
 
     var gameFactory = {};
 
@@ -251,6 +358,25 @@ angular.module('mahjong.games').factory('gameFactory', ['config', '$http', funct
     };
 
     /**
+     * Create a new game. Required authentication
+     *
+     * @param template
+     * @param minPlayers
+     * @param maxPlayers
+     * @returns {*}
+     */
+    gameFactory.createNew = function(template, minPlayers, maxPlayers)
+    {
+        var postBody = {
+            templateName : template,
+            minPlayers : minPlayers,
+            maxPlayers : maxPlayers
+        };
+
+        return $http({method: 'POST', url: config.apiUrl + '/Games', data: postBody});
+    };
+
+    /**
      * Get game players
      *
      * @param id
@@ -258,16 +384,64 @@ angular.module('mahjong.games').factory('gameFactory', ['config', '$http', funct
      */
     gameFactory.getGamePlayers = function(id)
     {
-        return $http({method: 'GET', url: config.apiUrl + '/Games/' + id + '/Players'})
+        return $http({method: 'GET', url: config.apiUrl + '/Games/' + id + '/Players'});
     };
 
     /**
      * Get game tiles
+     *
+     * @param id
+     * @returns {*}
      */
     gameFactory.getGameTiles = function(id)
     {
-        return $http({method: 'GET', url: config.apiUrl + '/Games/' + id + '/Tiles'})
+        return $http({method: 'GET', url: config.apiUrl + '/Games/' + id + '/Tiles'});
     };
+
+    /**
+     * Start a game. Requires the current auth session to be the games owner
+     *
+     * @param id
+     */
+    gameFactory.start = function(id)
+    {
+        return $http({method: 'POST', url: config.apiUrl + '/Games/' + id + '/Start', data: {}});
+    };
+
+
+    gameFactory.test = function(id, action)
+    {
+        return $http({method: 'GET', url: config.apiUrl + '/test/'+id+'/'+action});
+    };
+
+    ///**
+    // * Start AND load the games tiles and all
+    // *
+    // * @param id
+    // * @returns {*}
+    // */
+    //gameFactory.startAndLoad = function(id)
+    //{
+    //    var deferred = $q.defer();
+    //    var promises = [];
+    //
+    //    // Don't add start to the $q because if the game doesn't start
+    //    // we don't want the rest of the requests to be made
+    //    gameFactory.start(id).then(function(response) {
+    //        promises.push(gameFactory.getById(id));
+    //        promises.push(gameFactory.getGameTiles(id));
+    //    }, function(response) {
+    //        console.log('Could not start game!');
+    //    });
+    //
+    //    $q.all(promises).then(function(results) {
+    //        deferred.resolve({objects : results});
+    //    }, function(err) {
+    //        console.log('Cannot handle one of the requests. Following error occured', err);
+    //    });
+    //
+    //    return deferred.promise;
+    //};
 
     /**
      * Join a game
@@ -276,7 +450,7 @@ angular.module('mahjong.games').factory('gameFactory', ['config', '$http', funct
      */
     gameFactory.join = function(id)
     {
-        return $http({method: 'POST', url: config.apiUrl + '/Games/' + id + '/Players'})
+        return $http({method: 'POST', url: config.apiUrl + '/Games/' + id + '/Players'});
     };
 
     return gameFactory;
@@ -453,4 +627,41 @@ angular.module('mahjong').controller('BaseController', ['$scope', 'config', 'aut
     {
         authFactory.destroy();
     }
+}]);
+/**
+ * Socket factory
+ */
+angular.module('mahjong').factory('socket', ['$rootScope', function($rootScope) {
+    var socket = null;
+    return {
+        initialize: function(connection) {
+            socket = connection;
+        },
+        on: function (eventName, callback) {
+            if (socket == null) {
+                return;
+            }
+
+            socket.on(eventName, function () {
+                var args = arguments;
+                $rootScope.$apply(function () {
+                    callback.apply(socket, args);
+                });
+            });
+        },
+        emit: function (eventName, data, callback) {
+            if (socket == null) {
+                return;
+            }
+
+            socket.emit(eventName, data, function () {
+                var args = arguments;
+                $rootScope.$apply(function () {
+                    if (callback) {
+                        callback.apply(socket, args);
+                    }
+                });
+            })
+        }
+    };
 }]);

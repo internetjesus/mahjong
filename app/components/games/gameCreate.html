@@ -1,26 +1,34 @@
 <div class="row">
     <div class="col-md-4 col-md-offset-4">
-        <form name="newGame">
+        <form name="newGame" ng-submit="createGame(newGame.$valid)" novalidate>
             <h4 class="form-header">Start new Mahjong game</h4>
             <div class="form-group">
                 <label class="control-label">Template</label>
-                <choose-template></choose-template>
+                <select class="form-control" ng-model="game.templateName">
+                    <option value="Ox">Ox</option>
+                    <option value="Dragon">Dragon</option>
+                    <option value="Ram">Ram</option>
+                    <option value="Dragon">Dragon</option>
+                    <option value="Shanghai">Shanghai</option>
+                    <option value="Snake">Snake</option>
+                    <option value="Monkey">Monkey</option>
+                </select>
                 <p class="help-block">Choose the game board layout</p>
             </div>
             <div class="form-group">
                 <div class="row">
                     <div class="col-md-6">
                         <label class="control-label">Min players</label>
-                        <input type="number" class="form-control" name="minPlayers" placeholder="1" />
+                        <input type="number" ng-model="game.minPlayers" ng-required="true" class="form-control" name="minPlayers" placeholder="1" />
                     </div>
                     <div class="col-md-6">
                         <label class="control-label">Max players</label>
-                        <input type="number" class="form-control" name="maxPlayers" placeholder="4" />
+                        <input type="number" ng-model="game.maxPlayers" ng-required="true" class="form-control" name="maxPlayers" placeholder="4" />
                     </div>
                 </div>
             </div>
             <hr />
-            <button type="submit" class="btn btn-primary btn-block">Create game</button>
+            <button type="submit" class="btn btn-primary btn-block" ng-disabled="newGame.$invalid">Create game</button>
         </form>
     </div>
 </div>

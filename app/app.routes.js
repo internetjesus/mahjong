@@ -65,7 +65,7 @@ angular.module('mahjong').config(['$stateProvider', '$urlRouterProvider', functi
                         return r;
                     }, function(r) {
                         ngToast.create({className: 'warning', content: r.data.message});
-                        $state.go('mahjong.games');
+                        return null;
                     });
                 }]
             },

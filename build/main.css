@@ -1336,7 +1336,7 @@ a.bg-warning:hover {
 a.bg-danger:hover {
   background-color: #e4b9b9; }
 
-.page-header, .form-header {
+.page-header, .form-header, .page-header-small {
   padding-bottom: 9px;
   margin: 40px 0 20px;
   border-bottom: 1px solid #eeeeee; }
@@ -5646,6 +5646,9 @@ table thead tr td {
 
 .form-header {
   margin-top: 10px; }
+
+.page-header-small {
+  margin-top: 0px; }
 
 .static-form .form-group {
   margin-bottom: 0px; }
