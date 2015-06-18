@@ -32,7 +32,7 @@ angular.module('mahjong').config(['$stateProvider', '$urlRouterProvider', functi
             controller: 'GameListController',
             resolve: {
                 games:  ['gameFactory', function(gameFactory){
-                    return gameFactory.getAll(100, 1, '', '');
+                    return gameFactory.getAll(25, 1, '', '');
                 }]
             },
             data: {
@@ -41,7 +41,8 @@ angular.module('mahjong').config(['$stateProvider', '$urlRouterProvider', functi
         })
         .state('mahjong.view', {
             url: '/games/:gameId',
-            templateUrl:'app/components/games/gameView.html',
+            abstract: true,
+            templateUrl: 'app/components/games/gameView.html',
             controller: 'GameViewController',
             resolve: {
                 game:  ['gameFactory', '$stateParams', 'ngToast', '$state', function(gameFactory, $stateParams, ngToast, $state){
@@ -51,7 +52,29 @@ angular.module('mahjong').config(['$stateProvider', '$urlRouterProvider', functi
                         ngToast.create({className: 'warning', content: r.data.message});
                         $state.go('mahjong.games');
                     });
-                }],
+                }]
+            }
+        })
+        .state('mahjong.view.board', {
+            url: '/board',
+            templateUrl: 'app/components/games/gameBoard.html',
+            controller: 'GameBoardController',
+            resolve: {
+                tiles:  ['gameFactory', '$stateParams', 'ngToast', '$state', function(gameFactory, $stateParams, ngToast, $state){
+                    return gameFactory.getGameTiles($stateParams.gameId).then(function(r) {
+                        return r;
+                    }, function(r) {
+                        //ngToast.create({className: 'warning', content: r.data.message});
+                        return null;
+                    });
+                }]
+            }
+        })
+        .state('mahjong.view.players', {
+            url: '/players',
+            templateUrl: 'app/components/players/playerList.html',
+            controller: 'PlayerListController',
+            resolve: {
                 players:  ['gameFactory', '$stateParams', 'ngToast', '$state', function(gameFactory, $stateParams, ngToast, $state){
                     return gameFactory.getGamePlayers($stateParams.gameId).then(function(r) {
                         return r;
@@ -59,19 +82,11 @@ angular.module('mahjong').config(['$stateProvider', '$urlRouterProvider', functi
                         ngToast.create({className: 'warning', content: r.data.message});
                         $state.go('mahjong.games');
                     });
-                }],
-                tiles:  ['gameFactory', '$stateParams', 'ngToast', '$state', function(gameFactory, $stateParams, ngToast, $state){
-                    return gameFactory.getGameTiles($stateParams.gameId).then(function(r) {
-                        return r;
-                    }, function(r) {
-                        ngToast.create({className: 'warning', content: r.data.message});
-                        return null;
-                    });
                 }]
-            },
-            data: {
-                requiredLogin: true
             }
+        })
+        .state('mahjong.view.matches', {
+
         })
         .state('mahjong.create', {
             url: '/new',

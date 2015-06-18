@@ -1,7 +1,7 @@
 /**
  * Game factory
  */
-angular.module('mahjong.games').factory('gameFactory', ['config', '$http', '$q', function(config, $http, $q) {
+angular.module('mahjong.games').factory('gameFactory', ['config', '$http', '$q', 'authFactory', function(config, $http, $q, authFactory) {
 
     var gameFactory = {};
 
@@ -87,40 +87,40 @@ angular.module('mahjong.games').factory('gameFactory', ['config', '$http', '$q',
         return $http({method: 'POST', url: config.apiUrl + '/Games/' + id + '/Start', data: {}});
     };
 
-
+    /**
+     * Test a socket call
+     *
+     * @param id
+     * @param action
+     * @returns {*}
+     */
     gameFactory.test = function(id, action)
     {
         return $http({method: 'GET', url: config.apiUrl + '/test/'+id+'/'+action});
     };
 
-    ///**
-    // * Start AND load the games tiles and all
-    // *
-    // * @param id
-    // * @returns {*}
-    // */
-    //gameFactory.startAndLoad = function(id)
-    //{
-    //    var deferred = $q.defer();
-    //    var promises = [];
-    //
-    //    // Don't add start to the $q because if the game doesn't start
-    //    // we don't want the rest of the requests to be made
-    //    gameFactory.start(id).then(function(response) {
-    //        promises.push(gameFactory.getById(id));
-    //        promises.push(gameFactory.getGameTiles(id));
-    //    }, function(response) {
-    //        console.log('Could not start game!');
-    //    });
-    //
-    //    $q.all(promises).then(function(results) {
-    //        deferred.resolve({objects : results});
-    //    }, function(err) {
-    //        console.log('Cannot handle one of the requests. Following error occured', err);
-    //    });
-    //
-    //    return deferred.promise;
-    //};
+    /**
+     * Checks if a user can join a game
+     * @param game
+     * @returns {boolean}
+     */
+    gameFactory.canJoinGame = function(game)
+    {
+        var canJoin = true;
+
+        if (game.state != 'open' || game.players.length == game.maxPlayers) {
+            canJoin = false;
+        } else {
+            for (var i = 0, len = game.players.length; i < len; i++) {
+                if (game.players[i]._id == authFactory.getUsername()) {
+                    canJoin = false;
+                    break;
+                }
+            }
+        }
+
+        return canJoin;
+    }
 
     /**
      * Join a game

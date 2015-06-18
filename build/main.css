@@ -5644,6 +5644,17 @@ table thead tr td {
     color: #333333;
     cursor: pointer; }
 
+.waiting {
+  margin: auto;
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0; }
+
+#loading-bar .bar {
+  background-color: #22B24C; }
+
 .form-header {
   margin-top: 10px; }
 
@@ -5666,19 +5677,176 @@ table thead tr td {
   text-align: center; }
 
 .game-board {
+  -webkit-border-radius: 10px;
+  border-radius: 10px;
+  background-clip: padding-box;
+  /* stops bg color from leaking outside the border: */
   position: relative;
-  height: 700px; }
+  height: 800px;
+  overflow: scroll;
+  background-image: url("/assets/img/bg2.jpg"); }
 
 .tile {
-  -webkit-box-shadow: 5px 5px 12px #000 ;
-  -moz-box-shadow: 5px 5px 12px #000 ;
-  box-shadow: 5px 5px 12px #000 ;
-  width: 72px;
-  height: 90px;
-  background-image: url("/assets/img/Mahjong_sprite_sheet_2.png");
-  padding: 5px;
-  border: 1px solid black;
+  -webkit-box-shadow: -10px 10px 30px #000 ;
+  -moz-box-shadow: -10px 10px 30px #000 ;
+  box-shadow: -10px 10px 30px #000 ;
+  background-image: url("/assets/img/sprite_sheet_1.png");
+  background-repeat: no-repeat;
   position: absolute;
-  background: white; }
+  width: 74px;
+  height: 91px; }
+
+.Circle {
+  background-position-x: 0px;
+  background-position-y: -182px; }
+
+.Circle-1 {
+  background-position-x: 0px; }
+
+.Circle-2 {
+  background-position-x: -74px; }
+
+.Circle-3 {
+  background-position-x: -148px; }
+
+.Circle-4 {
+  background-position-x: -222px; }
+
+.Circle-5 {
+  background-position-x: -296px; }
+
+.Circle-6 {
+  background-position-x: -370px; }
+
+.Circle-7 {
+  background-position-x: -444px; }
+
+.Circle-8 {
+  background-position-x: -518px; }
+
+.Circle-9 {
+  background-position-x: -592px; }
+
+.Character {
+  background-position-x: 0px;
+  background-position-y: 0px; }
+
+.Character-1 {
+  background-position-x: 0px; }
+
+.Character-2 {
+  background-position-x: -74px; }
+
+.Character-3 {
+  background-position-x: -148px; }
+
+.Character-4 {
+  background-position-x: -222px; }
+
+.Character-5 {
+  background-position-x: -296px; }
+
+.Character-6 {
+  background-position-x: -370px; }
+
+.Character-7 {
+  background-position-x: -444px; }
+
+.Character-8 {
+  background-position-x: -518px; }
+
+.Character-9 {
+  background-position-x: -592px; }
+
+.Bamboo {
+  background-position-x: 0px;
+  background-position-y: -91px; }
+
+.Bamboo-1 {
+  background-position-x: 0px; }
+
+.Bamboo-2 {
+  background-position-x: -74px; }
+
+.Bamboo-3 {
+  background-position-x: -148px; }
+
+.Bamboo-4 {
+  background-position-x: -222px; }
+
+.Bamboo-5 {
+  background-position-x: -296px; }
+
+.Bamboo-6 {
+  background-position-x: -370px; }
+
+.Bamboo-7 {
+  background-position-x: -444px; }
+
+.Bamboo-8 {
+  background-position-x: -518px; }
+
+.Bamboo-9 {
+  background-position-x: -592px; }
+
+.Dragon-Red {
+  background-position-x: -962px;
+  background-position-y: -91px; }
+
+.Dragon-Green {
+  background-position-x: -962px;
+  background-position-y: 0px; }
+
+.Dragon-White {
+  background-position-x: -962px;
+  background-position-y: -182px; }
+
+.Flower-Chrysantememum {
+  background-position-x: -888px;
+  background-position-y: -182px; }
+
+.Flower-Plum {
+  background-position-x: -740px;
+  background-position-y: -182px; }
+
+.Flower-Orchid {
+  background-position-x: -814px;
+  background-position-y: -182px; }
+
+.Flower-Bamboo {
+  background-position-x: -666px;
+  background-position-y: -182px; }
+
+.Wind-East {
+  background-position-x: -666px;
+  background-position-y: 0px; }
+
+.Wind-South {
+  background-position-x: -740px;
+  background-position-y: 0px; }
+
+.Wind-North {
+  background-position-x: -814px;
+  background-position-y: 0px; }
+
+.Wind-West {
+  background-position-x: -888px;
+  background-position-y: 0px; }
+
+.Season-Spring {
+  background-position-x: -666px;
+  background-position-y: -91px; }
+
+.Season-Summer {
+  background-position-x: -740px;
+  background-position-y: -91px; }
+
+.Season-Winter {
+  background-position-x: -888px;
+  background-position-y: -91px; }
+
+.Season-Autumn {
+  background-position-x: -814px;
+  background-position-y: -91px; }
 
 /*# sourceMappingURL=main.css.map */

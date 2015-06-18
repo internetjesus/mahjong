@@ -1,42 +1,28 @@
-<div class="row">
-    <div class="col-md-12">
-        <h2 class="page-header-small">{{ game.gameTemplate.id}} <small>Created by {{ game.createdBy.name }}.</small>
-            <div class="btn-group btn-group-sm pull-right" role="group">
-                <button class="btn btn-sm btn-default" ng-click="testSocket()">Test socket</button>
-                <button class="btn btn-sm btn-primary">Join game</button>
-                <button class="btn btn-sm btn-success" ng-click="startGame()" ng-hide="game.createdBy._id != $root.auth.username || game.state != 'open'">Start game</button>
-            </div>
-        </h2>
-    </div>
-</div>
+<!--<div class="row">-->
+    <!--<div class="col-md-12">-->
+        <!--<h2 class="page-header-small">{{ game.gameTemplate.id}} <small>Created by {{ game.createdBy.name }}.</small>-->
+            <!--<div class="btn-group btn-group-sm pull-right" role="group">-->
+                <!--&lt;!&ndash;<button class="btn btn-sm btn-default" ng-click="testSocket()">Test socket</button>&ndash;&gt;-->
 
+            <!--</div>-->
+        <!--</h2>-->
+    <!--</div>-->
+<!--</div>-->
 <div class="row">
-    <div class="col-md-9">
-        <div class="game-board" ng-if="tiles != null">
-            <tile ng-repeat="tile in tiles" x="tile.x" y="tile.y" z="tile.z" tile="tile" />
-        </div>
+    <div class="col-md-10">
+        <div ui-view></div>
     </div>
-    <div class="col-md-3">
-        <div class="filter panel panel-default">
-            <div class="panel-heading">
-                <h5>Players overview</h5>
-            </div>
+    <div class="col-md-2">
+        <div class="panel panel-default">
+            <div class="panel-heading"><h5>Menu</h5></div>
             <div class="panel-body">
-                <table class="table table-responsive">
-                    <thead>
-                        <tr>
-                            <td>Name</td>
-                            <td>Matches</td>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr ng-repeat="player in players">
-                            <td>{{ player.name }}</td>
-                            <td>{{ player.numberOfMatches }}</td>
-                        </tr>
-                    </tbody>
-                </table>
-                <p class="help-block">This game requires a minimum of {{ game.minPlayers }} players to start and a maximum of {{ game.maxPlayers }}</p>
+                <a ui-sref="mahjong.view.board" type="button" class="btn btn-lg btn-block btn-default"><span class="glyphicon glyphicon-th pull-left"></span> Board</a>
+                <a ui-sref="mahjong.view.players" type="button" class="btn btn-lg btn-block btn-default"><span class="glyphicon glyphicon-user pull-left"></span> Lobby ({{game.players.length}}/{{game.maxPlayers}})</a>
+                <a ui-sref="mahjong.view.players" type="button" class="btn btn-lg btn-block btn-default"><span class="glyphicon glyphicon-eye-open pull-left"></span> Matches</a>
+                <a ui-sref="mahjong.view.players" type="button" class="btn btn-lg btn-block btn-default"><span class="glyphicon glyphicon-question-sign pull-left"></span> Help</a>
+                <hr />
+                <button class="btn btn-lg btn-block btn-primary" ng-click="joinGame()" ng-disabled="!canJoinGame()">Join this game!</button>
+                <button class="btn btn-lg btn-block btn-success" ng-click="startGame()" ng-hide="game.createdBy._id != $root.auth.username || game.state != 'open'">Start game</button>
             </div>
             <div class="panel-footer"></div>
         </div>

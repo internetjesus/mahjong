@@ -2,7 +2,7 @@
  * Game List Controller
  */
 angular.module('mahjong.games')
-    .controller('GameListController', ['$scope', 'games', 'gameFactory', 'ngToast', function($scope, games, gameFactory, ngToast) {
+    .controller('GameListController', ['$scope', 'games', 'gameFactory', 'ngToast', '$state', 'authFactory', function($scope, games, gameFactory, ngToast, $state, authFactory) {
         $scope.sortType     = 'createdOn';
         $scope.sortReverse  = true;
 
@@ -25,47 +25,36 @@ angular.module('mahjong.games')
          * @param id
          */
         $scope.joinGame = function(id) {
-            gameFactory.join(id).then(function(response) {
+            gameFactory.join(id).then(function(res) {
                 ngToast.create("Game joined. Redirect...");
-            }, function(response) {
-                ngToast.create({className: 'warning', content: response.data.message});
+                $state.go('mahjong.view.players', { gameId : id });
+            }, function(res) {
+                ngToast.create({className: 'warning', content: res.data.message});
             });
+        };
+
+        /**
+         * Whether or not the current auth user can join this game
+         * @param game
+         */
+        $scope.canJoinGame = function(game) {
+            return gameFactory.canJoinGame(game);
         };
 
         $scope.games = games.data;
     }]);
 
 /**
- * Game View Controller
+ * Game Board Controller
  */
-angular.module('mahjong.games').controller('GameViewController', [
-    '$scope',
-    'game',
-    'players',
-    'tiles',
-    'gameFactory',
-    'ngToast',
-    'socket',
-    'config',
-    function($scope, game, players, tiles, gameFactory, ngToast, socket, config) {
+angular.module('mahjong.games')
+    .controller('GameViewController', ['$scope', 'game', 'gameFactory', 'ngToast', 'socket', 'config', '$state', function($scope, game, gameFactory, ngToast, socket, config, $state) {
 
     /**
      * The game object.
      * @type Object
      */
-    $scope.game     = game.data;
-
-    /**
-     * The players (this is in a different variable because we append players
-     * to it from the socket
-     * @type Object
-     */
-    $scope.players  = players.data;
-
-    // Check if the tiles are represent!
-    if (typeof(tiles) == 'object' && tiles != null) {
-        $scope.tiles = tiles.data;
-    }
+    $scope.game = game.data;
 
     /**
      * Start the game
@@ -80,15 +69,26 @@ angular.module('mahjong.games').controller('GameViewController', [
     };
 
     /**
-     * Test socket
+     * Whether or not the current auth user can join this game
+     * @param game
      */
-    $scope.testSocket = function()
-    {
-        gameFactory.test($scope.game._id, 'match').then(function(res) {
-            console.log('Response from test request', res);
+    $scope.canJoinGame = function() {
+        return gameFactory.canJoinGame($scope.game);
+    };
+
+    /**
+     * Join a game
+     * @param id
+     */
+    $scope.joinGame = function() {
+        gameFactory.join($scope.game._id).then(function(res) {
+            ngToast.create("Game joined!");
+        }, function(res) {
+            ngToast.create({className: 'warning', content: res.data.message});
         });
     };
 
+    // Initialize socket endpoint
     var socketEndPoint = config.apiUrl + '?gameId='+$scope.game._id;
     socket.initialize(io(socketEndPoint));
 
@@ -96,14 +96,17 @@ angular.module('mahjong.games').controller('GameViewController', [
      * Listen to start event on socket
      */
     socket.on('start', function(res) {
-        // Load game tiles
-        ngToast.create({className: 'info', content: 'Game started! Loading tiles...'});
+        console.log('Game started event triggered', res);
+        console.log($state.current);
 
-        gameFactory.getGameTiles($scope.game._id).then(function(res) {
-            $scope.tiles = res.data;
+        // Update game state
+        $scope.game.state = 'playing';
 
-            ngToast.create({className: 'info', content: 'Tiles loaded! Enjoy the game'});
-        });
+        if ($state.current == 'mahjong.view.board') {
+            $state.go($state.current, {}, {reload: true});
+        } else {
+            $state.go('mahjong.view.board', { gameId : $scope.game._id });
+        }
     });
 
     /**
@@ -117,6 +120,7 @@ angular.module('mahjong.games').controller('GameViewController', [
      * Listen to player joined event
      */
     socket.on('playerJoined', function(res) {
+        $scope.players.push(res);
         console.log('Player joined this game! Response from server:', res);
     });
 
@@ -126,6 +130,15 @@ angular.module('mahjong.games').controller('GameViewController', [
     socket.on('match', function(res) {
         console.log('A match has been made! Response from server:', res);
     });
+}]);
+
+/**
+ * Game board controller
+ */
+angular.module('mahjong.games').controller('GameBoardController', ['$scope', 'tiles', function($scope, tiles) {
+
+
+    $scope.tiles = (tiles == null) ? null : tiles.data;
 }]);
 
 /**
@@ -147,12 +160,10 @@ angular.module('mahjong.games').controller('GameCreateController', ['$scope', '$
 
         if (isValid) {
             gameFactory.createNew($scope.game.templateName, $scope.game.minPlayers, $scope.game.maxPlayers).then(function(response) {
-
-                $state.go('mahjong.view', { gameId : response.data._id });
-                // ngToast
-                // Redirect: response.data._id
-            }, function(response) {
-                console.log('het ging fout', response);
+                ngToast.create({className: 'success', content: 'Game created! Have fun'})
+                $state.go('mahjong.view.board', { gameId : response.data._id });
+            }, function(res) {
+                ngToast.create({className: 'warning', content: res.data.message})
             });
         }
     }

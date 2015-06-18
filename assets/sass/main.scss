@@ -21,6 +21,16 @@ table {
   }
 }
 
+.waiting {
+  margin: auto;
+  position: absolute;
+  top: 0; left: 0; bottom: 0; right: 0;
+}
+
+#loading-bar .bar {
+  background-color: #22B24C;
+}
+
 .form-header {
   @extend .page-header;
   margin-top: 10px;
@@ -56,26 +66,96 @@ table {
 }
 
 .game-board {
+  @include border-radius(10px);
   position: relative;
-  height: 700px;
+  height: 800px;
+  overflow: scroll;
+  background-image: url('/assets/img/bg2.jpg');
 }
 
 .tile {
-  @include box-shadow(5px, 5px, 12px);
+  @include box-shadow(-10px, 10px, 30px);
+  background-image: $icon-set1;
+  background-repeat: no-repeat;
+  position: absolute;
   width: $icon-width;
   height: $icon-height;
-  background-image: $icons;
-  padding: 5px;
-  border: 1px solid black;
-  position: absolute;
-  background: white;
 }
 
-//.Circle { background-position: -($icon-width) -($icon-height * 2);  }
-//.Dragon { background-position: -($icon-width * 5) -($icon-height * 1);  }
-//.Character { background-position: -($icon-width * 5) -($icon-height * 1);  }
-//.Bamboo { background-position: -($icon-width * 2) -($icon-height * 2);  }
-//.Flower { background-position: -($icon-width * 10) -($icon-height * 2);  }
-//.Wind { background-position: -($icon-width * 5) -($icon-height * 1);  }
+.Circle {
+  @include bg-pos($icon-correction, $icon-height*2);
+}
 
+@include horizontal-icon-step('Circle', $icon-correction, $icon-width, 9);
 
+.Character {
+  @include bg-pos($icon-correction, $icon-correction);
+}
+
+@include horizontal-icon-step('Character', $icon-correction, $icon-width, 9);
+
+.Bamboo {
+  @include bg-pos($icon-correction, $icon-height);
+}
+
+@include horizontal-icon-step('Bamboo', $icon-correction, $icon-width, 9);
+
+.Dragon-Red {
+  @include bg-pos($icon-width*13, $icon-height);
+}
+
+.Dragon-Green {
+  @include bg-pos($icon-width*13, $icon-correction);
+}
+
+.Dragon-White {
+  @include bg-pos($icon-width*13, $icon-height*2);
+}
+
+.Flower-Chrysantememum {
+  @include bg-pos($icon-width*12, $icon-height*2);
+}
+
+.Flower-Plum {
+  @include bg-pos($icon-width*10, $icon-height*2);
+}
+
+.Flower-Orchid {
+  @include bg-pos($icon-width*11, $icon-height*2);
+}
+
+.Flower-Bamboo {
+  @include bg-pos($icon-width*9, $icon-height*2);
+}
+
+.Wind-East {
+  @include bg-pos($icon-width*9, $icon-correction);
+}
+
+.Wind-South {
+  @include bg-pos($icon-width*10, $icon-correction);
+}
+
+.Wind-North {
+  @include bg-pos($icon-width*11, $icon-correction);
+}
+
+.Wind-West {
+  @include bg-pos($icon-width*12, $icon-correction);
+}
+
+.Season-Spring {
+  @include bg-pos($icon-width*9, $icon-height);
+}
+
+.Season-Summer {
+  @include bg-pos($icon-width*10, $icon-height);
+}
+
+.Season-Winter {
+  @include bg-pos($icon-width*12, $icon-height);
+}
+
+.Season-Autumn {
+  @include bg-pos($icon-width*11, $icon-height);
+}

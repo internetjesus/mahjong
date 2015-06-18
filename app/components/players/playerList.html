@@ -1,24 +1,14 @@
-<div class="filter panel panel-default">
-    <div class="panel-heading">
-        <h5>Players</h5>
-    </div>
-    <div class="panel-body">
-        <table class="table table-responsive">
-            <thead>
-            <tr>
-                <td>Name</td>
-                <td>Matches</td>
-            </tr>
-            </thead>
-            <tbody>
-            <tr ng-repeat="player in players">
-                <td>{{ player.name }}</td>
-                <td>{{ player.numberOfMatches }}</td>
-            </tr>
-            </tbody>
-        </table>
-    </div>
-    <div class="panel-footer">
-
-    </div>
-</div>
+<table class="table table-responsive">
+    <thead>
+    <tr>
+        <td>Name</td>
+        <td>Matches</td>
+    </tr>
+    </thead>
+    <tbody>
+    <tr ng-repeat="player in players">
+        <td>{{ player.name }}</td>
+        <td>{{ player.numberOfMatches }}</td>
+    </tr>
+    </tbody>
+</table>

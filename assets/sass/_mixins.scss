@@ -3,3 +3,23 @@
   -moz-box-shadow:$left $top $blur $color #{$inset};
   box-shadow:$left $top $blur $color #{$inset};
 }
+
+@mixin bg-pos($bg-x, $bg-y) {
+  background-position-x: -$bg-x;
+  background-position-y: -$bg-y;
+}
+
+@mixin horizontal-icon-step($className, $starting_width, $icon_width, $num_icons) {
+  $num_icons: $num_icons + 1;
+  @for $i from 1 to $num_icons {
+    .#{$className}-#{$i} {
+      background-position-x: -($icon-width*($i - 1));
+    }
+  }
+}
+
+@mixin border-radius($radius) {
+  -webkit-border-radius: $radius;
+  border-radius: $radius;
+  background-clip: padding-box;  /* stops bg color from leaking outside the border: */
+}
