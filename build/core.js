@@ -101,12 +101,9 @@ angular.module('mahjong').config(['$stateProvider', '$urlRouterProvider', functi
         })
         .state('mahjong.games', {
             url: '/games',
-            templateUrl:'app/components/games/gameList2.html',
+            templateUrl:'app/components/games/gameList.html',
             controller: 'GameListController',
             resolve: {
-                games:  ['gameFactory', function(gameFactory){
-                    return gameFactory.getAll(12, 1, '', '');
-                }],
                 templates: ['templateFactory', function(templateFactory) {
                     return templateFactory.getAll();
                 }]
@@ -139,7 +136,6 @@ angular.module('mahjong').config(['$stateProvider', '$urlRouterProvider', functi
             controller: 'GameBoardController',
             resolve: {
                 tiles:  ['gameFactory', '$state', 'game', function(gameFactory, $state, game){
-
                     if (game.data.state != 'open') {
                         return gameFactory.getGameTiles(game.data._id, false).then(function (r) {
                             return r;
@@ -147,7 +143,6 @@ angular.module('mahjong').config(['$stateProvider', '$urlRouterProvider', functi
                     } else {
                         return null;
                     }
-
                 }],
                 matchedTiles : ['gameFactory', 'game', function(gameFactory, game) {
                     if (game.data.state != 'open') {
@@ -176,7 +171,18 @@ angular.module('mahjong').config(['$stateProvider', '$urlRouterProvider', functi
             }
         })
         .state('mahjong.view.matches', {
-
+            url: '/matches',
+            templateUrl: 'app/components/games/gameMatches.html',
+            controller: 'GameMatchesController',
+            resolve: {
+                matchedTiles:  ['gameFactory', '$stateParams', function(gameFactory, $stateParams){
+                    return gameFactory.getGameTiles($stateParams.gameId, true).then(function(r) {
+                        return r;
+                    }, function(r) {
+                        return null;
+                    });
+                }]
+            }
         })
         .state('mahjong.create', {
             url: '/new',
@@ -192,7 +198,6 @@ angular.module('mahjong').config(['$stateProvider', '$urlRouterProvider', functi
             }
         });
 }]);
-
 /**
  * Game module
  */
@@ -201,7 +206,7 @@ angular.module('mahjong.games', []);
  * Game board controller
  */
 angular.module('mahjong.games')
-    .controller('GameBoardController', ['$scope', 'socket', 'tiles', 'matchedTiles', 'gameFactory', function($scope, socket, tiles, matchedTiles, gameFactory) {
+    .controller('GameBoardController', ['$scope', 'socket', 'tiles', 'matchedTiles', 'gameFactory', 'ngToast', function($scope, socket, tiles, matchedTiles, gameFactory, ngToast) {
 
         /**
          * Matched tiles
@@ -232,8 +237,10 @@ angular.module('mahjong.games')
             if ($scope.matchQueue.length == 2) {
                 // Send match to API
                 gameFactory.match($scope.game._id, $scope.matchQueue[0]._id, $scope.matchQueue[1]._id).then(function (res) {
+                    ngToast.create({className:'success', content: "Congratulations! You made a match"});
                     $scope.matchQueue = [];
                 }, function(res) {
+                    ngToast.create({className:'info', content: res.data.message});
                     $scope.matchQueue = [];
                 });
             }
@@ -248,9 +255,12 @@ angular.module('mahjong.games')
         socket.on('match', function(res) {
             console.log('A match has been made! Response from server:', res);
 
-            for (var i = 0, len = $scope.tiles.length; i < len; i++) {
-                if ($scope.tiles[i]._id == res[0]._id
-                    || $scope.tiles[i]._id == res[0].match.otherTileId)
+            for (var i = 0; i < $scope.tiles.length; i++) {
+                if ($scope.tiles[i]._id == res[0]._id)
+                {
+                    $scope.tiles.splice(i, 1);
+                }
+                else if ($scope.tiles[i]._id == res[0].match.otherTileId)
                 {
                     $scope.tiles.splice(i, 1);
                 }
@@ -261,6 +271,8 @@ angular.module('mahjong.games')
          * Load tiles on game start socket event
          */
         socket.on('start', function(res) {
+            console.log('A game has started! Response from server:', res);
+
             $scope.game.state = 'playing';
 
             gameFactory.getGameTiles($scope.game._id).then(function(res) {
@@ -282,24 +294,40 @@ angular.module('mahjong.games')
  * Game List Controller
  */
 angular.module('mahjong.games')
-    .controller('GameListController', ['$scope', 'games', 'templates', 'gameFactory', 'ngToast', '$state', 'authFactory', function($scope, games, templates, gameFactory, ngToast, $state, authFactory) {
-        $scope.sortType     = 'createdOn';
-        $scope.sortReverse  = true;
+    .controller('GameListController', ['$scope', 'templates', 'gameFactory', 'ngToast', '$state', 'authFactory', function($scope, templates, gameFactory, ngToast, $state, authFactory) {
+        $scope.sortType      = 'createdOn';
+        $scope.sortReverse   = true;
 
+        $scope.bigTotalItems = 0;
+        $scope.currentPage = 1;
+        $scope.maxSize = 5;
+
+        $scope.pageChanged = function() {
+            $scope.loadGames();
+        };
+
+        $scope.games = null;
         $scope.templates = templates.data;
+
+        /**
+         * Load games from API
+         */
+        $scope.loadGames = function()
+        {
+            gameFactory.getAll(12, $scope.currentPage, $scope.gamesFilter.gameTemplate, $scope.gamesFilter.state, $scope.gamesFilter.createdBy).success(function(response, status, headers) {
+                $scope.bigTotalItems = parseInt(headers('X-total-count'));
+                $scope.games = response;
+            });
+        };
 
         /**
          * Games filter object
          * @type {{createdBy: {name: string}, state: string, gameTemplate: {id: string}}}
          */
         $scope.gamesFilter  = {
-            'createdBy' : {
-                'name' : ''
-            },
+            'createdBy' : '',
             'state' : '',
-            'gameTemplate' : {
-                'id' : ''
-            }
+            'gameTemplate' : ''
         };
 
         /**
@@ -323,7 +351,8 @@ angular.module('mahjong.games')
             return gameFactory.canJoinGame(game);
         };
 
-        $scope.games = games.data;
+
+        $scope.loadGames();
     }]);
 
 /**
@@ -373,18 +402,20 @@ angular.module('mahjong.games').factory('gameFactory', ['config', '$http', '$q',
      * @param pageIndex
      * @param gameTemplate
      * @param state
+     * @param createdBy
      * @returns {*}
      */
-    gameFactory.getAll = function(pageSize, pageIndex, gameTemplate, state)
+    gameFactory.getAll = function(pageSize, pageIndex, gameTemplate, state, createdBy)
     {
         var filter = {
             'pageSize' : pageSize,
             'pageIndex': pageIndex,
             'gameTemplate': gameTemplate,
-            'state' : state
+            'state' : state,
+            'createdBy' : createdBy
         };
 
-        return $http({method: 'GET', url: config.apiUrl + '/Games?pageSize=' + filter.pageSize});
+        return $http({method: 'GET', url: config.apiUrl + '/Games', params: filter});
     };
 
     /**

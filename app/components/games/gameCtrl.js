@@ -2,24 +2,40 @@
  * Game List Controller
  */
 angular.module('mahjong.games')
-    .controller('GameListController', ['$scope', 'games', 'templates', 'gameFactory', 'ngToast', '$state', 'authFactory', function($scope, games, templates, gameFactory, ngToast, $state, authFactory) {
-        $scope.sortType     = 'createdOn';
-        $scope.sortReverse  = true;
+    .controller('GameListController', ['$scope', 'templates', 'gameFactory', 'ngToast', '$state', 'authFactory', function($scope, templates, gameFactory, ngToast, $state, authFactory) {
+        $scope.sortType      = 'createdOn';
+        $scope.sortReverse   = true;
 
+        $scope.bigTotalItems = 0;
+        $scope.currentPage = 1;
+        $scope.maxSize = 5;
+
+        $scope.pageChanged = function() {
+            $scope.loadGames();
+        };
+
+        $scope.games = null;
         $scope.templates = templates.data;
+
+        /**
+         * Load games from API
+         */
+        $scope.loadGames = function()
+        {
+            gameFactory.getAll(12, $scope.currentPage, $scope.gamesFilter.gameTemplate, $scope.gamesFilter.state, $scope.gamesFilter.createdBy).success(function(response, status, headers) {
+                $scope.bigTotalItems = parseInt(headers('X-total-count'));
+                $scope.games = response;
+            });
+        };
 
         /**
          * Games filter object
          * @type {{createdBy: {name: string}, state: string, gameTemplate: {id: string}}}
          */
         $scope.gamesFilter  = {
-            'createdBy' : {
-                'name' : ''
-            },
+            'createdBy' : '',
             'state' : '',
-            'gameTemplate' : {
-                'id' : ''
-            }
+            'gameTemplate' : ''
         };
 
         /**
@@ -43,7 +59,8 @@ angular.module('mahjong.games')
             return gameFactory.canJoinGame(game);
         };
 
-        $scope.games = games.data;
+
+        $scope.loadGames();
     }]);
 
 /**

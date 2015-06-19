@@ -28,12 +28,9 @@ angular.module('mahjong').config(['$stateProvider', '$urlRouterProvider', functi
         })
         .state('mahjong.games', {
             url: '/games',
-            templateUrl:'app/components/games/gameList2.html',
+            templateUrl:'app/components/games/gameList.html',
             controller: 'GameListController',
             resolve: {
-                games:  ['gameFactory', function(gameFactory){
-                    return gameFactory.getAll(12, 1, '', '');
-                }],
                 templates: ['templateFactory', function(templateFactory) {
                     return templateFactory.getAll();
                 }]
@@ -66,7 +63,6 @@ angular.module('mahjong').config(['$stateProvider', '$urlRouterProvider', functi
             controller: 'GameBoardController',
             resolve: {
                 tiles:  ['gameFactory', '$state', 'game', function(gameFactory, $state, game){
-
                     if (game.data.state != 'open') {
                         return gameFactory.getGameTiles(game.data._id, false).then(function (r) {
                             return r;
@@ -74,7 +70,6 @@ angular.module('mahjong').config(['$stateProvider', '$urlRouterProvider', functi
                     } else {
                         return null;
                     }
-
                 }],
                 matchedTiles : ['gameFactory', 'game', function(gameFactory, game) {
                     if (game.data.state != 'open') {
@@ -103,7 +98,18 @@ angular.module('mahjong').config(['$stateProvider', '$urlRouterProvider', functi
             }
         })
         .state('mahjong.view.matches', {
-
+            url: '/matches',
+            templateUrl: 'app/components/games/gameMatches.html',
+            controller: 'GameMatchesController',
+            resolve: {
+                matchedTiles:  ['gameFactory', '$stateParams', function(gameFactory, $stateParams){
+                    return gameFactory.getGameTiles($stateParams.gameId, true).then(function(r) {
+                        return r;
+                    }, function(r) {
+                        return null;
+                    });
+                }]
+            }
         })
         .state('mahjong.create', {
             url: '/new',

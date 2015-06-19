@@ -21,7 +21,8 @@
                 <a ui-sref="mahjong.view.players" type="button" class="btn btn-lg btn-block btn-default"><span class="glyphicon glyphicon-eye-open pull-left"></span> Matches</a>
                 <a ui-sref="mahjong.view.players" type="button" class="btn btn-lg btn-block btn-default"><span class="glyphicon glyphicon-question-sign pull-left"></span> Help</a>
                 <hr />
-                <button class="btn btn-lg btn-block btn-primary" ng-click="joinGame()" ng-disabled="!canJoinGame()">Join this game!</button>
+                <button class="btn btn-lg btn-block btn-default" ng-click="joinGame()" ng-disabled="!canJoinGame()">Join this game!</button>
+                <button class="btn btn-lg btn-block btn-default">Change tiles</button>
                 <button class="btn btn-lg btn-block btn-success" ng-click="startGame()" ng-hide="game.createdBy._id != $root.auth.username || game.state != 'open'">Start game</button>
             </div>
             <div class="panel-footer"></div>

@@ -5725,15 +5725,17 @@ table thead tr td {
   -webkit-box-shadow: -10px 10px 30px #000 ;
   -moz-box-shadow: -10px 10px 30px #000 ;
   box-shadow: -10px 10px 30px #000 ;
-  background-image: url("/assets/img/sprite_sheet_1.png");
   background-repeat: no-repeat;
   position: absolute;
   width: 74px;
   height: 91px;
   cursor: pointer; }
 
-.selected {
-  transform: translateY(5px); }
+.tile-wrapper.tile-style-1 .tile {
+  background-image: url("/assets/img/sprite_sheet_1.png"); }
+
+.tile-wrapper.tile-style-2 .tile {
+  background-image: url("/assets/img/sprite_sheet_3.png"); }
 
 .Circle {
   background-position-x: 0px;

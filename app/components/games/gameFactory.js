@@ -12,18 +12,20 @@ angular.module('mahjong.games').factory('gameFactory', ['config', '$http', '$q',
      * @param pageIndex
      * @param gameTemplate
      * @param state
+     * @param createdBy
      * @returns {*}
      */
-    gameFactory.getAll = function(pageSize, pageIndex, gameTemplate, state)
+    gameFactory.getAll = function(pageSize, pageIndex, gameTemplate, state, createdBy)
     {
         var filter = {
             'pageSize' : pageSize,
             'pageIndex': pageIndex,
             'gameTemplate': gameTemplate,
-            'state' : state
+            'state' : state,
+            'createdBy' : createdBy
         };
 
-        return $http({method: 'GET', url: config.apiUrl + '/Games?pageSize=' + filter.pageSize});
+        return $http({method: 'GET', url: config.apiUrl + '/Games', params: filter});
     };
 
     /**

@@ -2,7 +2,7 @@
  * Game board controller
  */
 angular.module('mahjong.games')
-    .controller('GameBoardController', ['$scope', 'socket', 'tiles', 'matchedTiles', 'gameFactory', function($scope, socket, tiles, matchedTiles, gameFactory) {
+    .controller('GameBoardController', ['$scope', 'socket', 'tiles', 'matchedTiles', 'gameFactory', 'ngToast', function($scope, socket, tiles, matchedTiles, gameFactory, ngToast) {
 
         /**
          * Matched tiles
@@ -33,8 +33,10 @@ angular.module('mahjong.games')
             if ($scope.matchQueue.length == 2) {
                 // Send match to API
                 gameFactory.match($scope.game._id, $scope.matchQueue[0]._id, $scope.matchQueue[1]._id).then(function (res) {
+                    ngToast.create({className:'success', content: "Congratulations! You made a match"});
                     $scope.matchQueue = [];
                 }, function(res) {
+                    ngToast.create({className:'info', content: res.data.message});
                     $scope.matchQueue = [];
                 });
             }
@@ -49,9 +51,12 @@ angular.module('mahjong.games')
         socket.on('match', function(res) {
             console.log('A match has been made! Response from server:', res);
 
-            for (var i = 0, len = $scope.tiles.length; i < len; i++) {
-                if ($scope.tiles[i]._id == res[0]._id
-                    || $scope.tiles[i]._id == res[0].match.otherTileId)
+            for (var i = 0; i < $scope.tiles.length; i++) {
+                if ($scope.tiles[i]._id == res[0]._id)
+                {
+                    $scope.tiles.splice(i, 1);
+                }
+                else if ($scope.tiles[i]._id == res[0].match.otherTileId)
                 {
                     $scope.tiles.splice(i, 1);
                 }
@@ -62,6 +67,8 @@ angular.module('mahjong.games')
          * Load tiles on game start socket event
          */
         socket.on('start', function(res) {
+            console.log('A game has started! Response from server:', res);
+
             $scope.game.state = 'playing';
 
             gameFactory.getGameTiles($scope.game._id).then(function(res) {
