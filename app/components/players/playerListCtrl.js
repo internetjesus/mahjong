@@ -11,11 +11,10 @@ angular.module('mahjong.games')
         $scope.players = players.data;
 
         /**
-         * Listen to player joined event
+         * Listen to player joined event and add them to the players object
          */
         socket.on('playerJoined', function(res) {
             $scope.players.push(res);
-            console.log('Player joined this game! Response from server:', res);
         });
 
     }]);

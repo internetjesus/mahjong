@@ -2,7 +2,7 @@ angular.module('mahjong').run(['$templateCache', function($templateCache) {
   'use strict';
 
   $templateCache.put('app/components/games/gameBoard.html',
-    "<div class=\"game-board\"><div class=\"tile-wrapper tile-style-1\" ng-show=\"tiles != null\"><tile ng-repeat=\"tile in tiles\" ng-click=\"checkMatch(tile)\" tile=\"tile\"></tile></div><img src=\"/assets/img/tumblr_mf71km11Pd1rl8vbqo1_400.gif\" class=\"waiting\" ng-show=\"tiles==null\"></div>"
+    "<div class=\"game-board\"><div class=\"tile-wrapper tile-style-1\" ng-show=\"tiles != null\"><tile ng-repeat=\"tile in tiles\" ng-click=\"tileClick(tile)\" tile=\"tile\"></tile></div><img src=\"/assets/img/tumblr_mf71km11Pd1rl8vbqo1_400.gif\" class=\"waiting\" ng-show=\"tiles==null\"></div>"
   );
 
 
@@ -32,7 +32,7 @@ angular.module('mahjong').run(['$templateCache', function($templateCache) {
 
 
   $templateCache.put('app/components/tiles/tileTemplate.html',
-    "<div class=\"tile {{tile.tile.suit}} {{tile.tile.suit}}-{{tile.tile.name}}\"></div>"
+    "<div class=\"tile\"></div>"
   );
 
 
