@@ -3,7 +3,7 @@
         <!--<h2 class="page-header-small">{{ game.gameTemplate.id}} <small>Created by {{ game.createdBy.name }}.</small>-->
             <!--<div class="btn-group btn-group-sm pull-right" role="group">-->
                 <!--&lt;!&ndash;<button class="btn btn-sm btn-default" ng-click="testSocket()">Test socket</button>&ndash;&gt;-->
-
+                    <!--({{game.players.length}}/{{game.maxPlayers}})-->
             <!--</div>-->
         <!--</h2>-->
     <!--</div>-->
@@ -17,7 +17,7 @@
             <div class="panel-heading"><h5>Menu</h5></div>
             <div class="panel-body">
                 <a ui-sref="mahjong.view.board" type="button" class="btn btn-lg btn-block btn-default"><span class="glyphicon glyphicon-th pull-left"></span> Board</a>
-                <a ui-sref="mahjong.view.players" type="button" class="btn btn-lg btn-block btn-default"><span class="glyphicon glyphicon-user pull-left"></span> Lobby ({{game.players.length}}/{{game.maxPlayers}})</a>
+                <a ui-sref="mahjong.view.players" type="button" class="btn btn-lg btn-block btn-default"><span class="glyphicon glyphicon-user pull-left"></span> Lobby </a>
                 <a ui-sref="mahjong.view.players" type="button" class="btn btn-lg btn-block btn-default"><span class="glyphicon glyphicon-eye-open pull-left"></span> Matches</a>
                 <a ui-sref="mahjong.view.players" type="button" class="btn btn-lg btn-block btn-default"><span class="glyphicon glyphicon-question-sign pull-left"></span> Help</a>
                 <hr />

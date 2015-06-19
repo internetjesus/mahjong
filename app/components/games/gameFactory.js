@@ -72,9 +72,10 @@ angular.module('mahjong.games').factory('gameFactory', ['config', '$http', '$q',
      * @param id
      * @returns {*}
      */
-    gameFactory.getGameTiles = function(id)
+    gameFactory.getGameTiles = function(id, matched)
     {
-        return $http({method: 'GET', url: config.apiUrl + '/Games/' + id + '/Tiles'});
+        var matched = (matched) ? 'true' : 'false';
+        return $http({method: 'GET', url: config.apiUrl + '/Games/' + id + '/Tiles?matched='+matched});
     };
 
     /**
@@ -120,7 +121,23 @@ angular.module('mahjong.games').factory('gameFactory', ['config', '$http', '$q',
         }
 
         return canJoin;
-    }
+    };
+
+    /**
+     * Match two tiles
+     *
+     * @param tileOne
+     * @param tileTwo
+     */
+    gameFactory.match = function(gameId, tileOneId, tileTwoId)
+    {
+        var postBody = {
+            tile1Id : tileOneId,
+            tile2Id : tileTwoId
+        };
+
+        return $http({method: 'POST', url: config.apiUrl + '/Games/'+gameId+'/Tiles/matches', data: postBody});
+    };
 
     /**
      * Join a game

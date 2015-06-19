@@ -5,13 +5,7 @@
             <div class="form-group">
                 <label class="control-label">Template</label>
                 <select class="form-control" ng-model="game.templateName">
-                    <option value="Ox">Ox</option>
-                    <option value="Dragon">Dragon</option>
-                    <option value="Ram">Ram</option>
-                    <option value="Dragon">Dragon</option>
-                    <option value="Shanghai">Shanghai</option>
-                    <option value="Snake">Snake</option>
-                    <option value="Monkey">Monkey</option>
+                    <option value="{{template._id}}" ng-repeat="template in templates">{{template._id}}</option>
                 </select>
                 <p class="help-block">Choose the game board layout</p>
             </div>

@@ -1,6 +1,8 @@
 <div class="game-board">
     <div class="tilesWrapper" ng-show="tiles != null">
-        <tile ng-repeat="tile in tiles" x="tile.x" y="tile.y" z="tile.z" tile="tile" />
+        <tile ng-repeat="tile in tiles"
+              tile="tile"
+              ng-click="checkMatch(tile)"></tile>
     </div>
     <img src="/assets/img/tumblr_mf71km11Pd1rl8vbqo1_400.gif" class="waiting" ng-show="tiles==null" />
 </div>
