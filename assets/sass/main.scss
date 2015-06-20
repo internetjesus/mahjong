@@ -120,6 +120,10 @@ table {
   cursor: pointer;
 }
 
+.clicked {
+  border: 2px solid transparent;
+}
+
 .tile-wrapper.tile-style-1 {
   .tile {
     background-image: $icon-set1;

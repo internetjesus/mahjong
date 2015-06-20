@@ -47,5 +47,15 @@
                 ngToast.create({className: 'warning', content: res.data.message});
             });
         }
+
+        socket.on('start', function(res)
+        {
+            vm.game.state = 'playing';
+        });
+
+        socket.on('end', function(res)
+        {
+            vm.game.state = 'finished';
+        });
     }
 })();

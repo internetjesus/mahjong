@@ -5731,6 +5731,9 @@ table thead tr td {
   height: 91px;
   cursor: pointer; }
 
+.clicked {
+  border: 2px solid transparent; }
+
 .tile-wrapper.tile-style-1 .tile {
   background-image: url("/assets/img/sprite_sheet_1.png"); }
 
