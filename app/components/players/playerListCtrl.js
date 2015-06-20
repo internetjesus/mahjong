@@ -1,20 +1,28 @@
-/**
- * Player List Controller
- */
-angular.module('mahjong.games')
-    .controller('PlayerListController', ['$scope', 'players', 'socket', function($scope, players, socket) {
+(function() {
+    'use strict';
 
-        /**
-         * Pass players data to view
-         * @type array
-         */
-        $scope.players = players.data;
+    angular
+        .module('mahjong.games')
+        .controller('PlayerListController', PlayerListController);
 
-        /**
-         * Listen to player joined event and add them to the players object
-         */
+    PlayerListController.$inject = ['players', 'socket'];
+
+    function PlayerListController(players, socket)
+    {
+        /* */
+        var vm = this;
+
+        vm.players = {};
+
+        init();
+
+        function init()
+        {
+            vm.players = players.data;
+        }
+
         socket.on('playerJoined', function(res) {
-            $scope.players.push(res);
+            vm.players.push(res);
         });
-
-    }]);
+    }
+})();

@@ -1,19 +1,23 @@
-/**
- * Template factory
- */
-angular.module('mahjong.games').factory('templateFactory', ['config', '$http', function(config, $http) {
+(function() {
+    'use strict';
 
-    var templateFactory = {};
+    angular
+        .module('mahjong.games')
+        .factory('templateService', templateService);
 
-    /**
-     * Get a list of all game templates
-     *
-     * @returns {*}
-     */
-    templateFactory.getAll = function()
+    templateService.$inject = ['config', '$http'];
+
+    function templateService(config, $http)
     {
-        return $http({method: 'GET', url: config.apiUrl + '/GameTemplates'});
-    };
+        var service = {
+            getAll : getAll
+        };
 
-    return templateFactory;
-}]);
+        return service;
+
+        function getAll()
+        {
+            return $http({method: 'GET', url: config.apiUrl + '/GameTemplates'});
+        }
+    }
+})();

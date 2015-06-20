@@ -7,8 +7,8 @@ angular.module('mahjong.games').directive('chooseTemplate', function() {
         restrict: 'E',
         replace: true,
         templateUrl: 'app/components/templates/chooseTemplateDirective.html',
-        controller: ['$scope', 'templateFactory', function($scope, templateFactory) {
-            templateFactory.getAll().then(function(response) {
+        controller: ['$scope', 'templateService', function($scope, templateService) {
+            templateService.getAll().then(function(response) {
                 $scope.templates = response.data;
             });
         }],

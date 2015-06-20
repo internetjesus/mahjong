@@ -10,7 +10,7 @@
                         <h4>{{ game.gameTemplate.id}}</h4>
                         <p><i>Created by {{ game.createdBy.name }} on {{ game.createdOn | date:'medium'}} | Status : {{ game.state }}</i></p>
                         <div class="btn-group" role="group">
-                            <a type="button" ng-click="joinGame(game._id)" ng-disabled="!vm.canJoinGame(game)" class="btn btn-sm btn-primary">Join</a>
+                            <a type="button" ng-click="vm.joinGame(game._id)" ng-disabled="!vm.canJoinGame(game)" class="btn btn-sm btn-primary">Join</a>
                             <a ui-sref="mahjong.view.board({gameId : game._id})" type="button" class="btn btn-sm btn-default">View</a>
                         </div>
                     </div>

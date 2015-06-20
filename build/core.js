@@ -105,8 +105,8 @@ mahjong.config(['$httpProvider', function($httpProvider) {
                 templateUrl:'app/components/games/gameList.html',
                 controller: 'GameListController as vm',
                 resolve: {
-                    templates: ['templateFactory', function(templateFactory) {
-                        return templateFactory.getAll();
+                    templates: ['templateService', function(templateService) {
+                        return templateService.getAll();
                     }]
                 }
             })
@@ -147,7 +147,7 @@ mahjong.config(['$httpProvider', function($httpProvider) {
             .state('mahjong.view.players', {
                 url: '/players',
                 templateUrl: 'app/components/players/playerList.html',
-                controller: 'PlayerListController',
+                controller: 'PlayerListController as vm',
                 resolve: {
                     players:  ['gameService', '$stateParams', 'ngToast', '$state', function(gameService, $stateParams, ngToast, $state){
                         return gameService.getGamePlayers($stateParams.gameId).then(function(r) {
@@ -178,8 +178,8 @@ mahjong.config(['$httpProvider', function($httpProvider) {
                 templateUrl: 'app/components/games/gameCreate.html',
                 controller: 'GameCreateController as vm',
                 resolve: {
-                    templates: ['templateFactory', function(templateFactory) {
-                        return templateFactory.getAll();
+                    templates: ['templateService', function(templateService) {
+                        return templateService.getAll();
                     }]
                 }
             });
@@ -206,13 +206,19 @@ mahjong.config(['$httpProvider', function($httpProvider) {
         /* jshint validthis: true */
         var vm = this;
 
-        vm.game = game.data;
-        vm.tiles = (tiles) ? tiles.data : null;
+        vm.game = {};
+        vm.tiles = {};
         vm.tileSet = [];
         vm.tileClick = tileClick;
         vm.tileIsAlright = tileIsAlright;
 
-        console.log('Game inherited from parent ctrl', game);
+        init();
+
+        function init()
+        {
+            vm.game = game.data;
+            vm.tiles = (tiles) ? tiles.data : null;
+        }
 
         function tileClick(tile)
         {
@@ -244,6 +250,8 @@ mahjong.config(['$httpProvider', function($httpProvider) {
 
         socket.on('match', function(res)
         {
+            console.log(res);
+
             for (var i = 0; i < vm.tiles.length; i++)
             {
                 if (vm.tiles[i]._id == res[0]._id)
@@ -500,10 +508,20 @@ mahjong.config(['$httpProvider', function($httpProvider) {
         /* jshint validthis: true */
         var vm = this;
 
-        vm.game = game.data;
+        vm.game = {};
         vm.startGame = startGame;
         vm.canJoinGame = canJoinGame;
         vm.joinGame = joinGame;
+
+        init();
+
+        function init()
+        {
+            vm.game = game.data;
+
+            var socketEndPoint = config.apiUrl + '?gameId='+vm.game._id;
+            socket.initialize(io(socketEndPoint));
+        }
 
         function startGame()
         {
@@ -525,32 +543,36 @@ mahjong.config(['$httpProvider', function($httpProvider) {
                 ngToast.create({className: 'warning', content: res.data.message});
             });
         }
-
-        // Initialize dynamic socket endpoint
-        var socketEndPoint = config.apiUrl + '?gameId='+vm.game._id;
-        socket.initialize(io(socketEndPoint));
     }
 })();
-/**
- * Player List Controller
- */
-angular.module('mahjong.games')
-    .controller('PlayerListController', ['$scope', 'players', 'socket', function($scope, players, socket) {
+(function() {
+    'use strict';
 
-        /**
-         * Pass players data to view
-         * @type array
-         */
-        $scope.players = players.data;
+    angular
+        .module('mahjong.games')
+        .controller('PlayerListController', PlayerListController);
 
-        /**
-         * Listen to player joined event and add them to the players object
-         */
+    PlayerListController.$inject = ['players', 'socket'];
+
+    function PlayerListController(players, socket)
+    {
+        /* */
+        var vm = this;
+
+        vm.players = {};
+
+        init();
+
+        function init()
+        {
+            vm.players = players.data;
+        }
+
         socket.on('playerJoined', function(res) {
-            $scope.players.push(res);
+            vm.players.push(res);
         });
-
-    }]);
+    }
+})();
 /**
  * Tile directive
  */
@@ -560,8 +582,8 @@ angular.module('mahjong.games').directive('chooseTemplate', function() {
         restrict: 'E',
         replace: true,
         templateUrl: 'app/components/templates/chooseTemplateDirective.html',
-        controller: ['$scope', 'templateFactory', function($scope, templateFactory) {
-            templateFactory.getAll().then(function(response) {
+        controller: ['$scope', 'templateService', function($scope, templateService) {
+            templateService.getAll().then(function(response) {
                 $scope.templates = response.data;
             });
         }],
@@ -570,59 +592,58 @@ angular.module('mahjong.games').directive('chooseTemplate', function() {
         }
     }
 });
-/**
- * Template factory
- */
-angular.module('mahjong.games').factory('templateFactory', ['config', '$http', function(config, $http) {
+(function() {
+    'use strict';
 
-    var templateFactory = {};
+    angular
+        .module('mahjong.games')
+        .factory('templateService', templateService);
 
-    /**
-     * Get a list of all game templates
-     *
-     * @returns {*}
-     */
-    templateFactory.getAll = function()
+    templateService.$inject = ['config', '$http'];
+
+    function templateService(config, $http)
     {
-        return $http({method: 'GET', url: config.apiUrl + '/GameTemplates'});
-    };
+        var service = {
+            getAll : getAll
+        };
 
-    return templateFactory;
-}]);
+        return service;
+
+        function getAll()
+        {
+            return $http({method: 'GET', url: config.apiUrl + '/GameTemplates'});
+        }
+    }
+})();
 /**
  * Tile directive
  */
-angular.module('mahjong.games').directive('tile', function() {
-    return {
-        name: 'tile',
-        restrict: 'E',
-        replace: true,
-        templateUrl: 'app/components/tiles/tileTemplate.html',
-        link: function(scope, elem, attrs) {
-            // Set class name
-            elem.addClass(scope.tile.tile.suit);
-            elem.addClass(scope.tile.tile.suit + '-' + scope.tile.tile.name);
+(function() {
+    'use strict';
 
-            // Set the z-index
-            elem.css('z-index', (scope.tile.yPos ) + ((scope.tile.zPos+1) * 50) - scope.tile.xPos);
+    angular
+        .module('mahjong.games')
+        .directive('tile', tile);
 
-            // Set the x and y position
-            elem.css('top', (scope.tile.yPos * 43 - (scope.tile.zPos * 10)) + 'px');
-            elem.css('left', (scope.tile.xPos * 33 + (scope.tile.zPos * 10)) + 'px');
-
-            // Bind the click function
-            /*elem.bind('click', function() {
-                if (scope.highlight) {
-                    scope.highlight = false;
-                    elem.removeClass('selected');
-                } else {
-                    scope.highlight = true;
-                    elem.addClass('selected');
-                }
-            });*/
+    function tile()
+    {
+        return {
+            name: 'tile',
+            restrict: 'E',
+            replace: true,
+            templateUrl: 'app/components/tiles/tileTemplate.html',
+            link: function(scope, elem, attrs) {
+                // Manipulate the DOM
+                elem.addClass(scope.tile.tile.suit);
+                elem.addClass(scope.tile.tile.suit + '-' + scope.tile.tile.name);
+                elem.css('z-index', (scope.tile.yPos ) + ((scope.tile.zPos+1) * 50) - scope.tile.xPos);
+                elem.css('top', (scope.tile.yPos * 43 - (scope.tile.zPos * 10)) + 'px');
+                elem.css('left', (scope.tile.xPos * 33 + (scope.tile.zPos * 10)) + 'px');
+            }
         }
     }
-});
+
+})();
 /**
  * Authentication module
  */

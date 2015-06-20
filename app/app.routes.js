@@ -32,8 +32,8 @@
                 templateUrl:'app/components/games/gameList.html',
                 controller: 'GameListController as vm',
                 resolve: {
-                    templates: ['templateFactory', function(templateFactory) {
-                        return templateFactory.getAll();
+                    templates: ['templateService', function(templateService) {
+                        return templateService.getAll();
                     }]
                 }
             })
@@ -74,7 +74,7 @@
             .state('mahjong.view.players', {
                 url: '/players',
                 templateUrl: 'app/components/players/playerList.html',
-                controller: 'PlayerListController',
+                controller: 'PlayerListController as vm',
                 resolve: {
                     players:  ['gameService', '$stateParams', 'ngToast', '$state', function(gameService, $stateParams, ngToast, $state){
                         return gameService.getGamePlayers($stateParams.gameId).then(function(r) {
@@ -105,8 +105,8 @@
                 templateUrl: 'app/components/games/gameCreate.html',
                 controller: 'GameCreateController as vm',
                 resolve: {
-                    templates: ['templateFactory', function(templateFactory) {
-                        return templateFactory.getAll();
+                    templates: ['templateService', function(templateService) {
+                        return templateService.getAll();
                     }]
                 }
             });

@@ -12,13 +12,19 @@
         /* jshint validthis: true */
         var vm = this;
 
-        vm.game = game.data;
-        vm.tiles = (tiles) ? tiles.data : null;
+        vm.game = {};
+        vm.tiles = {};
         vm.tileSet = [];
         vm.tileClick = tileClick;
         vm.tileIsAlright = tileIsAlright;
 
-        console.log('Game inherited from parent ctrl', game);
+        init();
+
+        function init()
+        {
+            vm.game = game.data;
+            vm.tiles = (tiles) ? tiles.data : null;
+        }
 
         function tileClick(tile)
         {
@@ -50,6 +56,8 @@
 
         socket.on('match', function(res)
         {
+            console.log(res);
+
             for (var i = 0; i < vm.tiles.length; i++)
             {
                 if (vm.tiles[i]._id == res[0]._id)
