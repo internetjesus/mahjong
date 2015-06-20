@@ -57,18 +57,17 @@
                     if (checkTileSetIsMatch()) {
                         gameService.match(vm.game._id, vm.tileSet[0]._id, vm.tileSet[1]._id).then(function (res) {
 
-                            clearTileSet()
-                            ngToast.create({className:'success', content: "Congratulations! You made a match"});
+                            clearTileSet();
 
                         }, function(res) {
 
-                            clearTileSet()
+                            clearTileSet();
                             ngToast.create({className:'info', content: res.data.message});
 
                         });
                     } else {
 
-                        clearTileSet()
+                        clearTileSet();
                         ngToast.create({className:'info', content: "That's not a match..."});
                     }
                 }
@@ -146,6 +145,7 @@
         socket.on('end', function(res)
         {
             vm.game.state = 'finished';
+            vm.canPlay = isAllowedToPlay();
             ngToast.create({className:'info', content: 'This game has ended!'});
         });
     }
