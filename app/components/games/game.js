@@ -1,4 +1,6 @@
-/**
- * Initialize game module
- */
-angular.module('mahjong.games', []);
+(function() {
+    'use strict';
+
+    angular.module('mahjong.games', []);
+
+})();

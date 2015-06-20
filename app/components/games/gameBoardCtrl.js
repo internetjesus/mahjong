@@ -1,94 +1,80 @@
-/**
- * Game board controller
- */
-angular.module('mahjong.games')
-    .controller('GameBoardController', ['$scope', 'socket', 'tiles', 'gameFactory', 'ngToast', function($scope, socket, tiles, gameFactory, ngToast) {
+(function() {
+    'use strict';
 
-        /**
-         * The tiles
-         * @type Array
-         */
-        $scope.tiles = (tiles) ? tiles.data : null;
+    angular
+        .module('mahjong.games')
+        .controller('GameBoardController', GameBoardController);
 
-        /**
-         * Clicked tiles
-         * @type {Array}
-         */
-        $scope.tileSet = [];
+    GameBoardController.$inject = ['game', 'socket', 'tiles', 'gameService', 'ngToast'];
 
-        /**
-         * Check for match
-         * @param tile
-         */
-        $scope.tileClick = function(tile)
+    function GameBoardController(game, socket, tiles, gameService, ngToast)
+    {
+        /* jshint validthis: true */
+        var vm = this;
+
+        vm.game = game.data;
+        vm.tiles = (tiles) ? tiles.data : null;
+        vm.tileSet = [];
+        vm.tileClick = tileClick;
+        vm.tileIsAlright = tileIsAlright;
+
+        console.log('Game inherited from parent ctrl', game);
+
+        function tileClick(tile)
         {
-            $scope.tileSet.push(tile);
+            vm.tileSet.push(tile);
 
-            if ($scope.tileSet.length == 2) {
+            if (vm.tileSet.length == 2) {
 
-                // If one of the tiles is not alright then fuck'em. Don't send the request
-                if (!$scope.tileIsAlright($scope.tileSet[0]) || !$scope.tileIsAlright($scope.tileSet[1])) {
-                    $scope.tileSet = [];
+                if (!vm.tileIsAlright(vm.tileSet[0]) || !vm.tileIsAlright(vm.tileSet[1])) {
+                    vm.tileSet = [];
                     return false;
                 }
 
-                // The tiles look good, attempt to send them to the API and see what they think of it
-                gameFactory.match($scope.game._id, $scope.tileSet[0]._id, $scope.tileSet[1]._id).then(function (res) {
+                gameService.match(vm.game._id, vm.tileSet[0]._id, vm.tileSet[1]._id).then(function (res) {
 
                     ngToast.create({className:'success', content: "Congratulations! You made a match"});
-                    $scope.tileSet = [];
+                    vm.tileSet = [];
                 }, function(res) {
 
                     ngToast.create({className:'info', content: res.data.message});
-                    $scope.tileSet = [];
+                    vm.tileSet = [];
                 });
             }
-        };
+        }
 
-        /**
-         * Check whether or not a tile has nothing on the left, right and top
-         */
-        $scope.tileIsAlright = function(tile)
+        function tileIsAlright(tile)
         {
             return true;
-        };
+        }
 
-        /**
-         * Listen to tile match even
-         * @note use a filter for this and maybe add an animation to it with qLite
-         */
         socket.on('match', function(res)
         {
-            for (var i = 0; i < $scope.tiles.length; i++)
+            for (var i = 0; i < vm.tiles.length; i++)
             {
-                if ($scope.tiles[i]._id == res[0]._id)
+                if (vm.tiles[i]._id == res[0]._id)
                 {
-                    $scope.tiles.splice(i, 1);
+                    vm.tiles.splice(i, 1);
                 }
-                else if ($scope.tiles[i]._id == res[0].match.otherTileId)
+                else if (vm.tiles[i]._id == res[0].match.otherTileId)
                 {
-                    $scope.tiles.splice(i, 1);
+                    vm.tiles.splice(i, 1);
                 }
             }
         });
 
-        /**
-         * Load tiles on game start socket event
-         */
         socket.on('start', function(res)
         {
-            $scope.game.state = 'playing';
+            vm.game.state = 'playing';
 
-            gameFactory.getGameTiles($scope.game._id).then(function(res) {
-                $scope.tiles = res.data;
+            gameService.getGameTiles(vm.game._id).then(function(res) {
+                vm.tiles = res.data;
             });
         });
 
-        /**
-         * Listen to game end event
-         */
         socket.on('end', function(res)
         {
             ngToast.create({className:'info', content: 'This game has ended!'});
         });
-    }]);
+    }
+})();

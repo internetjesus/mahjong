@@ -71,535 +71,466 @@ mahjong.config(['$httpProvider', function($httpProvider) {
     $httpProvider.interceptors.push('HttpRequestInterceptor');
 }]);
 
-/**
- * App routes
- */
-angular.module('mahjong').config(['$stateProvider', '$urlRouterProvider', function($stateProvider, $urlRouterProvider) {
+(function() {
+    'use strict';
 
-    // For any unmatched url, redirect to /games
-    $urlRouterProvider.otherwise("/games");
+    angular
+        .module('mahjong')
+        .config(config);
 
-    $stateProvider
-        .state('mahjong', {
-            url: '',
-            abstract: true,
-            templateUrl: 'app/shared/base/baseMaster.html',
-            controller: 'BaseController'
-        })
-        .state('callback', {
-            url: '/callback?username&token',
-            template: '',
-            controller: ['$scope', '$state', '$stateParams','authFactory', function($scope, $state, $stateParams, authFactory) {
-                authFactory.store($stateParams.username, $stateParams.token);
+    config.$inject = ['$stateProvider', '$urlRouterProvider'];
 
-                // Redirect to game list
-                $state.go('mahjong.games');
-            }],
-            data: {
-                requiredLogin: false
-            }
-        })
-        .state('mahjong.games', {
-            url: '/games',
-            templateUrl:'app/components/games/gameList.html',
-            controller: 'GameListController',
-            resolve: {
-                templates: ['templateFactory', function(templateFactory) {
-                    return templateFactory.getAll();
+    function config($stateProvider, $urlRouterProvider)
+    {
+        $urlRouterProvider.otherwise("/games");
+
+        $stateProvider
+            .state('mahjong', {
+                url: '',
+                abstract: true,
+                templateUrl: 'app/shared/base/baseMaster.html',
+                controller: 'BaseController'
+            })
+            .state('callback', {
+                url: '/callback?username&token',
+                template: '',
+                controller: ['$scope', '$state', '$stateParams','authFactory', function($scope, $state, $stateParams, authFactory) {
+                    // @TODO Check if the params are correct..
+                    authFactory.store($stateParams.username, $stateParams.token);
+                    $state.go('mahjong.games');
                 }]
-            },
-            data: {
-                requiredLogin: false
-            }
-        })
-        .state('mahjong.view', {
-            url: '/games/:gameId',
-            abstract: true,
-            templateUrl: 'app/components/games/gameView.html',
-            controller: 'GameViewController',
-            resolve: {
-                game:  ['gameFactory', '$stateParams', 'ngToast', '$state', function(gameFactory, $stateParams, ngToast, $state) {
+            })
+            .state('mahjong.games', {
+                url: '/games',
+                templateUrl:'app/components/games/gameList.html',
+                controller: 'GameListController as vm',
+                resolve: {
+                    templates: ['templateFactory', function(templateFactory) {
+                        return templateFactory.getAll();
+                    }]
+                }
+            })
+            .state('mahjong.view', {
+                url: '/games/:gameId',
+                abstract: true,
+                templateUrl: 'app/components/games/gameView.html',
+                controller: 'GameViewController as vm',
+                resolve: {
+                    game:  ['gameService', '$stateParams', 'ngToast', '$state', function(gameService, $stateParams, ngToast, $state) {
 
-                    return gameFactory.getById($stateParams.gameId).then(function(r) {
-                        return r;
-                    }, function(r) {
-                        ngToast.create({className: 'warning', content: r.data.message});
-                        $state.go('mahjong.games');
-                    });
-
-                }]
-            }
-        })
-        .state('mahjong.view.board', {
-            url: '/board',
-            templateUrl: 'app/components/games/gameBoard.html',
-            controller: 'GameBoardController',
-            resolve: {
-                tiles:  ['gameFactory', '$state', 'game', function(gameFactory, $state, game){
-                    if (game.data.state != 'open') {
-                        return gameFactory.getGameTiles(game.data._id, false).then(function (r) {
+                        return gameService.getById($stateParams.gameId).then(function(r) {
                             return r;
+                        }, function(r) {
+                            ngToast.create({className: 'warning', content: r.data.message});
+                            $state.go('mahjong.games');
                         });
-                    } else {
-                        return null;
-                    }
-                }],
-                matchedTiles : ['gameFactory', 'game', function(gameFactory, game) {
-                    if (game.data.state != 'open') {
-                        return gameFactory.getGameTiles(game.data._id, true).then(function (r) {
+
+                    }]
+                }
+            })
+            .state('mahjong.view.board', {
+                url: '/board',
+                templateUrl: 'app/components/games/gameBoard.html',
+                controller: 'GameBoardController as vm',
+                resolve: {
+                    tiles:  ['gameService', '$state', 'game', function(gameService, $state, game){
+                        if (game.data.state != 'open') {
+                            return gameService.getGameTiles(game.data._id, false).then(function (r) {
+                                return r;
+                            });
+                        } else {
+                            return null;
+                        }
+                    }]
+                }
+            })
+            .state('mahjong.view.players', {
+                url: '/players',
+                templateUrl: 'app/components/players/playerList.html',
+                controller: 'PlayerListController',
+                resolve: {
+                    players:  ['gameService', '$stateParams', 'ngToast', '$state', function(gameService, $stateParams, ngToast, $state){
+                        return gameService.getGamePlayers($stateParams.gameId).then(function(r) {
                             return r;
+                        }, function(r) {
+                            ngToast.create({className: 'warning', content: r.data.message});
+                            $state.go('mahjong.games');
                         });
-                    } else {
-                        return null;
-                    }
-                }]
-            }
-        })
-        .state('mahjong.view.players', {
-            url: '/players',
-            templateUrl: 'app/components/players/playerList.html',
-            controller: 'PlayerListController',
-            resolve: {
-                players:  ['gameFactory', '$stateParams', 'ngToast', '$state', function(gameFactory, $stateParams, ngToast, $state){
-                    return gameFactory.getGamePlayers($stateParams.gameId).then(function(r) {
-                        return r;
-                    }, function(r) {
-                        ngToast.create({className: 'warning', content: r.data.message});
-                        $state.go('mahjong.games');
-                    });
-                }]
-            }
-        })
-        .state('mahjong.view.matches', {
-            url: '/matches',
-            templateUrl: 'app/components/games/gameMatches.html',
-            controller: 'GameMatchesController',
-            resolve: {
-                matchedTiles:  ['gameFactory', '$stateParams', function(gameFactory, $stateParams){
-                    return gameFactory.getGameTiles($stateParams.gameId, true).then(function(r) {
-                        return r;
-                    }, function(r) {
-                        return null;
-                    });
-                }]
-            }
-        })
-        .state('mahjong.create', {
-            url: '/new',
-            templateUrl: 'app/components/games/gameCreate.html',
-            controller: 'GameCreateController',
-            data: {
-                requiredLogin: true
-            },
-            resolve: {
-                templates: ['templateFactory', function(templateFactory) {
-                    return templateFactory.getAll();
-                }]
-            }
-        });
-}]);
-/**
- * Initialize game module
- */
-angular.module('mahjong.games', []);
-/**
- * Game board controller
- */
-angular.module('mahjong.games')
-    .controller('GameBoardController', ['$scope', 'socket', 'tiles', 'gameFactory', 'ngToast', function($scope, socket, tiles, gameFactory, ngToast) {
+                    }]
+                }
+            })
+            .state('mahjong.view.matches', {
+                url: '/matches',
+                templateUrl: 'app/components/games/gameMatches.html',
+                controller: 'GameMatchesController',
+                resolve: {
+                    matchedTiles:  ['gameService', '$stateParams', function(gameService, $stateParams){
+                        return gameService.getGameTiles($stateParams.gameId, true).then(function(r) {
+                            return r;
+                        }, function(r) {
+                            return null;
+                        });
+                    }]
+                }
+            })
+            .state('mahjong.create', {
+                url: '/new',
+                templateUrl: 'app/components/games/gameCreate.html',
+                controller: 'GameCreateController as vm',
+                resolve: {
+                    templates: ['templateFactory', function(templateFactory) {
+                        return templateFactory.getAll();
+                    }]
+                }
+            });
+    }
+})();
+(function() {
+    'use strict';
 
-        /**
-         * The tiles
-         * @type Array
-         */
-        $scope.tiles = (tiles) ? tiles.data : null;
+    angular.module('mahjong.games', []);
 
-        /**
-         * Clicked tiles
-         * @type {Array}
-         */
-        $scope.tileSet = [];
+})();
 
-        /**
-         * Check for match
-         * @param tile
-         */
-        $scope.tileClick = function(tile)
+(function() {
+    'use strict';
+
+    angular
+        .module('mahjong.games')
+        .controller('GameBoardController', GameBoardController);
+
+    GameBoardController.$inject = ['game', 'socket', 'tiles', 'gameService', 'ngToast'];
+
+    function GameBoardController(game, socket, tiles, gameService, ngToast)
+    {
+        /* jshint validthis: true */
+        var vm = this;
+
+        vm.game = game.data;
+        vm.tiles = (tiles) ? tiles.data : null;
+        vm.tileSet = [];
+        vm.tileClick = tileClick;
+        vm.tileIsAlright = tileIsAlright;
+
+        console.log('Game inherited from parent ctrl', game);
+
+        function tileClick(tile)
         {
-            $scope.tileSet.push(tile);
+            vm.tileSet.push(tile);
 
-            if ($scope.tileSet.length == 2) {
+            if (vm.tileSet.length == 2) {
 
-                // If one of the tiles is not alright then fuck'em. Don't send the request
-                if (!$scope.tileIsAlright($scope.tileSet[0]) || !$scope.tileIsAlright($scope.tileSet[1])) {
-                    $scope.tileSet = [];
+                if (!vm.tileIsAlright(vm.tileSet[0]) || !vm.tileIsAlright(vm.tileSet[1])) {
+                    vm.tileSet = [];
                     return false;
                 }
 
-                // The tiles look good, attempt to send them to the API and see what they think of it
-                gameFactory.match($scope.game._id, $scope.tileSet[0]._id, $scope.tileSet[1]._id).then(function (res) {
+                gameService.match(vm.game._id, vm.tileSet[0]._id, vm.tileSet[1]._id).then(function (res) {
 
                     ngToast.create({className:'success', content: "Congratulations! You made a match"});
-                    $scope.tileSet = [];
+                    vm.tileSet = [];
                 }, function(res) {
 
                     ngToast.create({className:'info', content: res.data.message});
-                    $scope.tileSet = [];
+                    vm.tileSet = [];
                 });
             }
-        };
+        }
 
-        /**
-         * Check whether or not a tile has nothing on the left, right and top
-         */
-        $scope.tileIsAlright = function(tile)
+        function tileIsAlright(tile)
         {
             return true;
-        };
+        }
 
-        /**
-         * Listen to tile match even
-         * @note use a filter for this and maybe add an animation to it with qLite
-         */
         socket.on('match', function(res)
         {
-            for (var i = 0; i < $scope.tiles.length; i++)
+            for (var i = 0; i < vm.tiles.length; i++)
             {
-                if ($scope.tiles[i]._id == res[0]._id)
+                if (vm.tiles[i]._id == res[0]._id)
                 {
-                    $scope.tiles.splice(i, 1);
+                    vm.tiles.splice(i, 1);
                 }
-                else if ($scope.tiles[i]._id == res[0].match.otherTileId)
+                else if (vm.tiles[i]._id == res[0].match.otherTileId)
                 {
-                    $scope.tiles.splice(i, 1);
+                    vm.tiles.splice(i, 1);
                 }
             }
         });
 
-        /**
-         * Load tiles on game start socket event
-         */
         socket.on('start', function(res)
         {
-            $scope.game.state = 'playing';
+            vm.game.state = 'playing';
 
-            gameFactory.getGameTiles($scope.game._id).then(function(res) {
-                $scope.tiles = res.data;
+            gameService.getGameTiles(vm.game._id).then(function(res) {
+                vm.tiles = res.data;
             });
         });
 
-        /**
-         * Listen to game end event
-         */
         socket.on('end', function(res)
         {
             ngToast.create({className:'info', content: 'This game has ended!'});
         });
-    }]);
-/**
- * Game List Controller
- */
-angular.module('mahjong.games')
-    .controller('GameListController', ['$scope', 'templates', 'gameFactory', 'ngToast', '$state', 'authFactory', function($scope, templates, gameFactory, ngToast, $state, authFactory) {
-        $scope.sortType      = 'createdOn';
-        $scope.sortReverse   = true;
+    }
+})();
+(function() {
+    
+    angular
+        .module('mahjong.games')
+        .controller('GameCreateController', GameCreateController);
+    
+    GameCreateController.$inject = ['$state', 'gameService', 'ngToast', 'templates'];
+    
+    function GameCreateController($state, gameService, ngToast, templates)
+    {
+        var vm = this;
+        
+        vm.game = {};
+        vm.templates = {};
+        vm.createGame = createGame;
 
-        $scope.bigTotalItems = 0;
-        $scope.currentPage = 1;
-        $scope.maxSize = 5;
+        init();
 
-        $scope.pageChanged = function() {
-            $scope.loadGames();
-        };
-
-        $scope.games = null;
-        $scope.templates = templates.data;
-
-        /**
-         * Load games from API
-         */
-        $scope.loadGames = function()
+        function init()
         {
-            gameFactory.getAll(12, $scope.currentPage, $scope.gamesFilter.gameTemplate, $scope.gamesFilter.state, $scope.gamesFilter.createdBy).success(function(response, status, headers) {
-                $scope.bigTotalItems = parseInt(headers('X-total-count'));
-                $scope.games = response;
-            });
-        };
+            vm.templates = templates.data;
+        }
 
-        /**
-         * Games filter object
-         * @type {{createdBy: {name: string}, state: string, gameTemplate: {id: string}}}
-         */
-        $scope.gamesFilter  = {
+        function createGame(isValid)
+        {
+            if (isValid) {
+                gameService.createNew(vm.game.templateName, vm.game.minPlayers, vm.game.maxPlayers).then(function(response) {
+                    ngToast.create({className: 'success', content: 'Game created! Have fun'})
+                    $state.go('mahjong.view.board', { gameId : response.data._id });
+                }, function(res) {
+                    ngToast.create({className: 'warning', content: res.data.message})
+                });
+            }
+        }
+    }
+})();
+(function() {
+    'use strict';
+
+    angular
+        .module('mahjong.games')
+        .controller('GameListController', GameListController);
+
+    GameListController.$inject = ['templates', 'gameService', 'ngToast', '$state'];
+
+    function GameListController(templates, gameService, ngToast, $state)
+    {
+        var vm = this;
+
+        vm.sortType = 'createdOn';
+        vm.sortReverse = true;
+        vm.bigTotalItems = 0;
+        vm.currentPage = 1;
+        vm.maxSize = 5;
+        vm.gamesFilter  = {
             'createdBy' : '',
             'state' : '',
             'gameTemplate' : ''
         };
 
-        /**
-         * Join a game
-         * @param id
-         */
-        $scope.joinGame = function(id) {
-            gameFactory.join(id).then(function(res) {
-                ngToast.create("Game joined. Redirect...");
-                $state.go('mahjong.view.players', { gameId : id });
-            }, function(res) {
-                ngToast.create({className: 'warning', content: res.data.message});
-            });
-        };
+        vm.games = null;
+        vm.templates = {};
 
-        /**
-         * Whether or not the current auth user can join this game
-         * @param game
-         */
-        $scope.canJoinGame = function(game) {
-            return gameFactory.canJoinGame(game);
-        };
+        vm.pageChanged = pageChanged;
+        vm.joinGame = joinGame;
+        vm.canJoinGame = canJoinGame;
+        vm.loadGames = loadGames;
 
+        init();
 
-        $scope.loadGames();
-    }]);
+        function init()
+        {
+            vm.templates = templates.data;
+            loadGames();
+        }
 
-/**
- * Game Create Controller
- */
-angular.module('mahjong.games').controller('GameCreateController', ['$scope', '$state', 'gameFactory', 'ngToast', 'templates', function($scope, $state, gameFactory, ngToast, templates) {
+        function pageChanged()
+        {
+            vm.loadGames();
+        }
 
-    /**
-     * The new game object
-     * @type {{}}
-     */
-    $scope.game = {};
+        function loadGames()
+        {
+            gameService
+                .getAll(12, vm.currentPage, vm.gamesFilter.gameTemplate, vm.gamesFilter.state, vm.gamesFilter.createdBy)
+                .success(function(response, status, headers) {
+                    vm.bigTotalItems = parseInt(headers('X-total-count'));
+                    vm.games = response;
+                });
+        }
 
-    /**
-     * Template list
-     * @type {Array}
-     */
-    $scope.templates = templates.data;
+        function joinGame(id)
+        {
+            gameService
+                .join(id)
+                .then(function(res) {
+                    ngToast.create("Game joined. Redirect...");
+                    $state.go('mahjong.view.players', { gameId : id });
+                }, function(res) {
+                    ngToast.create({className: 'warning', content: res.data.message});
+                });
+        }
 
-    /**
-     * Create a new game
-     * @param form
-     */
-    $scope.createGame = function(isValid) {
-
-        if (isValid) {
-            gameFactory.createNew($scope.game.templateName, $scope.game.minPlayers, $scope.game.maxPlayers).then(function(response) {
-                ngToast.create({className: 'success', content: 'Game created! Have fun'})
-                $state.go('mahjong.view.board', { gameId : response.data._id });
-            }, function(res) {
-                ngToast.create({className: 'warning', content: res.data.message})
-            });
+        function canJoinGame(game)
+        {
+            return gameService.canJoinGame(game);
         }
     }
-}]);
-/**
- * Game factory
- */
-angular.module('mahjong.games').factory('gameFactory', ['config', '$http', '$q', 'authFactory', function(config, $http, $q, authFactory) {
+})();
+(function() {
+    'use strict';
 
-    var gameFactory = {};
+    angular
+        .module('mahjong.games')
+        .factory('gameService', gameService);
 
-    /**
-     * Get a list of all games
-     *
-     * @param pageSize
-     * @param pageIndex
-     * @param gameTemplate
-     * @param state
-     * @param createdBy
-     * @returns {*}
-     */
-    gameFactory.getAll = function(pageSize, pageIndex, gameTemplate, state, createdBy)
+    gameService.$inject = ['config', '$http', 'authFactory'];
+
+    function gameService(config, $http, authFactory)
     {
-        var filter = {
-            'pageSize' : pageSize,
-            'pageIndex': pageIndex,
-            'gameTemplate': gameTemplate,
-            'state' : state,
-            'createdBy' : createdBy
+        var service = {
+            getAll: getAll,
+            getById: getById,
+            createNew: createNew,
+            getGamePlayers: getGamePlayers,
+            getGameTiles: getGameTiles,
+            start: start,
+            canJoinGame: canJoinGame,
+            match: match,
+            join: join
         };
 
-        return $http({method: 'GET', url: config.apiUrl + '/Games', params: filter});
-    };
+        return service;
 
-    /**
-     * Get a game by id
-     *
-     * @param id
-     */
-    gameFactory.getById = function(id)
-    {
-        return $http({method: 'GET', url: config.apiUrl + '/Games/' + id});
-    };
 
-    /**
-     * Create a new game. Required authentication
-     *
-     * @param template
-     * @param minPlayers
-     * @param maxPlayers
-     * @returns {*}
-     */
-    gameFactory.createNew = function(template, minPlayers, maxPlayers)
-    {
-        var postBody = {
-            templateName : template,
-            minPlayers : minPlayers,
-            maxPlayers : maxPlayers
-        };
+        function getAll(pageSize, pageIndex, gameTemplate, state, createdBy)
+        {
+            var filter = {
+                'pageSize' : pageSize,
+                'pageIndex': pageIndex,
+                'gameTemplate': gameTemplate,
+                'state' : state,
+                'createdBy' : createdBy
+            };
 
-        return $http({method: 'POST', url: config.apiUrl + '/Games', data: postBody});
-    };
-
-    /**
-     * Get game players
-     *
-     * @param id
-     * @returns {*}
-     */
-    gameFactory.getGamePlayers = function(id)
-    {
-        return $http({method: 'GET', url: config.apiUrl + '/Games/' + id + '/Players'});
-    };
-
-    /**
-     * Get game tiles
-     *
-     * @param id
-     * @returns {*}
-     */
-    gameFactory.getGameTiles = function(id, matched)
-    {
-        var matched = (matched) ? 'true' : 'false';
-        return $http({method: 'GET', url: config.apiUrl + '/Games/' + id + '/Tiles?matched='+matched});
-    };
-
-    /**
-     * Start a game. Requires the current auth session to be the games owner
-     *
-     * @param id
-     */
-    gameFactory.start = function(id)
-    {
-        return $http({method: 'POST', url: config.apiUrl + '/Games/' + id + '/Start', data: {}});
-    };
-
-    /**
-     * Test a socket call
-     *
-     * @param id
-     * @param action
-     * @returns {*}
-     */
-    gameFactory.test = function(id, action)
-    {
-        return $http({method: 'GET', url: config.apiUrl + '/test/'+id+'/'+action});
-    };
-
-    /**
-     * Checks if a user can join a game
-     * @param game
-     * @returns {boolean}
-     */
-    gameFactory.canJoinGame = function(game)
-    {
-        var canJoin = true;
-
-        if (game.state != 'open' || game.players.length == game.maxPlayers) {
-            canJoin = false;
-        } else {
-            for (var i = 0, len = game.players.length; i < len; i++) {
-                if (game.players[i]._id == authFactory.getUsername()) {
-                    canJoin = false;
-                    break;
-                }
-            }
+            return $http({method: 'GET', url: config.apiUrl + '/Games', params: filter});
         }
 
-        return canJoin;
-    };
-
-    /**
-     * Match two tiles
-     *
-     * @param tileOne
-     * @param tileTwo
-     */
-    gameFactory.match = function(gameId, tileOneId, tileTwoId)
-    {
-        var postBody = {
-            tile1Id : tileOneId,
-            tile2Id : tileTwoId
-        };
-
-        return $http({method: 'POST', url: config.apiUrl + '/Games/'+gameId+'/Tiles/matches', data: postBody});
-    };
-
-    /**
-     * Join a game
-     *
-     * @param id
-     */
-    gameFactory.join = function(id)
-    {
-        return $http({method: 'POST', url: config.apiUrl + '/Games/' + id + '/Players'});
-    };
-
-    return gameFactory;
-}]);
-/**
- * Game View Controller
- */
-angular.module('mahjong.games')
-    .controller('GameViewController', ['$scope', 'game', 'gameFactory', 'ngToast', 'socket', 'config', '$state', function($scope, game, gameFactory, ngToast, socket, config, $state) {
-
-        /**
-         * The game object.
-         * @type Object
-         */
-        $scope.game = game.data;
-
-        /**
-         * Start the game
-         */
-        $scope.startGame = function()
+        function getById(id)
         {
-            gameFactory.start($scope.game._id).then(function(res) {
+            return $http({method: 'GET', url: config.apiUrl + '/Games/' + id});
+        }
+
+        function createNew(template, minPlayers, maxPlayers)
+        {
+            var postBody = {
+                templateName : template,
+                minPlayers : minPlayers,
+                maxPlayers : maxPlayers
+            };
+
+            return $http({method: 'POST', url: config.apiUrl + '/Games', data: postBody});
+        }
+
+        function getGamePlayers(id)
+        {
+            return $http({method: 'GET', url: config.apiUrl + '/Games/' + id + '/Players'});
+        }
+
+        function getGameTiles(id, matched)
+        {
+            var matched = (matched) ? 'true' : 'false';
+            return $http({method: 'GET', url: config.apiUrl + '/Games/' + id + '/Tiles?matched='+matched});
+        }
+
+        function start(id)
+        {
+            return $http({method: 'POST', url: config.apiUrl + '/Games/' + id + '/Start', data: {}});
+        }
+
+        function canJoinGame(game)
+        {
+            var canJoin = true;
+
+            if (game.state != 'open' || game.players.length == game.maxPlayers) {
+                canJoin = false;
+            } else {
+                for (var i = 0, len = game.players.length; i < len; i++) {
+                    if (game.players[i]._id == authFactory.getUsername()) {
+                        canJoin = false;
+                        break;
+                    }
+                }
+            }
+
+            return canJoin;
+        }
+
+        function match(gameId, tileOneId, tileTwoId)
+        {
+            var postBody = {
+                tile1Id : tileOneId,
+                tile2Id : tileTwoId
+            };
+
+            return $http({method: 'POST', url: config.apiUrl + '/Games/'+gameId+'/Tiles/matches', data: postBody});
+        }
+
+        function join(id)
+        {
+            return $http({method: 'POST', url: config.apiUrl + '/Games/' + id + '/Players'});
+        }
+    }
+})();
+(function() {
+    'use strict';
+    
+    angular
+        .module('mahjong.games')
+        .controller('GameViewController', GameViewController);
+    
+    GameViewController.$inject = ['game', 'gameService', 'ngToast', 'socket', 'config'];
+    
+    function GameViewController(game, gameService, ngToast, socket, config)
+    {
+        /* jshint validthis: true */
+        var vm = this;
+
+        vm.game = game.data;
+        vm.startGame = startGame;
+        vm.canJoinGame = canJoinGame;
+        vm.joinGame = joinGame;
+
+        function startGame()
+        {
+            gameService.start(vm.game._id).then(function(res) {
                 ngToast.create({className: 'success', content: res.data});
             }, function(res) {
                 ngToast.create({className: 'warning', content: res.data.message});
             });
-        };
+        }
 
-        /**
-         * Whether or not the current auth user can join this game
-         * @param game
-         */
-        $scope.canJoinGame = function() {
-            return gameFactory.canJoinGame($scope.game);
-        };
+        function canJoinGame() {
+            return gameService.canJoinGame(vm.game);
+        }
 
-        /**
-         * Join a game
-         * @param id
-         */
-        $scope.joinGame = function() {
-            gameFactory.join($scope.game._id).then(function(res) {
+        function joinGame() {
+            gameService.join(vm.game._id).then(function(res) {
                 ngToast.create("Game joined!");
             }, function(res) {
                 ngToast.create({className: 'warning', content: res.data.message});
             });
-        };
+        }
 
         // Initialize dynamic socket endpoint
-        var socketEndPoint = config.apiUrl + '?gameId='+$scope.game._id;
+        var socketEndPoint = config.apiUrl + '?gameId='+vm.game._id;
         socket.initialize(io(socketEndPoint));
-
-
-    }]);
-
+    }
+})();
 /**
  * Player List Controller
  */

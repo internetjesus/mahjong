@@ -1,13 +1,3 @@
-<!--<div class="row">-->
-    <!--<div class="col-md-12">-->
-        <!--<h2 class="page-header-small">{{ game.gameTemplate.id}} <small>Created by {{ game.createdBy.name }}.</small>-->
-            <!--<div class="btn-group btn-group-sm pull-right" role="group">-->
-                <!--&lt;!&ndash;<button class="btn btn-sm btn-default" ng-click="testSocket()">Test socket</button>&ndash;&gt;-->
-                    <!--({{game.players.length}}/{{game.maxPlayers}})-->
-            <!--</div>-->
-        <!--</h2>-->
-    <!--</div>-->
-<!--</div>-->
 <div class="row">
     <div class="col-md-10">
         <div ui-view></div>
@@ -21,9 +11,9 @@
                 <a ui-sref="mahjong.view.players" type="button" class="btn btn-lg btn-block btn-default"><span class="glyphicon glyphicon-eye-open pull-left"></span> Matches</a>
                 <a ui-sref="mahjong.view.players" type="button" class="btn btn-lg btn-block btn-default"><span class="glyphicon glyphicon-question-sign pull-left"></span> Help</a>
                 <hr />
-                <button class="btn btn-lg btn-block btn-default" ng-click="joinGame()" ng-disabled="!canJoinGame()">Join this game!</button>
+                <button class="btn btn-lg btn-block btn-default" ng-click="vm.joinGame()" ng-disabled="!vm.canJoinGame()">Join this game!</button>
                 <button class="btn btn-lg btn-block btn-default">Change tiles</button>
-                <button class="btn btn-lg btn-block btn-success" ng-click="startGame()" ng-hide="game.createdBy._id != $root.auth.username || game.state != 'open'">Start game</button>
+                <button class="btn btn-lg btn-block btn-success" ng-click="vm.startGame()" ng-hide="vm.game.createdBy._id != $root.auth.username || vm.game.state != 'open'">Start game</button>
             </div>
             <div class="panel-footer"></div>
         </div>

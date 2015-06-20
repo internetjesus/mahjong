@@ -1,11 +1,11 @@
 <div class="row">
     <div class="col-md-4 col-md-offset-4">
-        <form name="newGame" ng-submit="createGame(newGame.$valid)" novalidate>
+        <form name="newGame" ng-submit="vm.createGame(newGame.$valid)" novalidate>
             <h4 class="form-header">Start new Mahjong game</h4>
             <div class="form-group">
                 <label class="control-label">Template</label>
-                <select class="form-control" ng-model="game.templateName">
-                    <option value="{{template._id}}" ng-repeat="template in templates">{{template._id}}</option>
+                <select class="form-control" ng-model="vm.game.templateName">
+                    <option value="{{template._id}}" ng-repeat="template in vm.templates">{{template._id}}</option>
                 </select>
                 <p class="help-block">Choose the game board layout</p>
             </div>
@@ -13,11 +13,11 @@
                 <div class="row">
                     <div class="col-md-6">
                         <label class="control-label">Min players</label>
-                        <input type="number" ng-model="game.minPlayers" ng-required="true" class="form-control" name="minPlayers" placeholder="1" />
+                        <input type="number" ng-model="vm.game.minPlayers" ng-required="true" class="form-control" name="minPlayers" placeholder="1" />
                     </div>
                     <div class="col-md-6">
                         <label class="control-label">Max players</label>
-                        <input type="number" ng-model="game.maxPlayers" ng-required="true" class="form-control" name="maxPlayers" placeholder="4" />
+                        <input type="number" ng-model="vm.game.maxPlayers" ng-required="true" class="form-control" name="maxPlayers" placeholder="4" />
                     </div>
                 </div>
             </div>

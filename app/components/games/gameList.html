@@ -1,7 +1,7 @@
 <div class="row">
     <div class="col-md-9">
         <div class="row">
-            <div class="col-xs-12 col-sm-4 col-md-4 col-lg-4" ng-repeat="game in games">
+            <div class="col-xs-12 col-sm-4 col-md-4 col-lg-4" ng-repeat="game in vm.games">
                 <div class="box">
                     <div class="box-icon">
                         <img ng-src="/assets/img/{{game.gameTemplate.id}}.png" alt="Board preview" class="img-circle">
@@ -10,7 +10,7 @@
                         <h4>{{ game.gameTemplate.id}}</h4>
                         <p><i>Created by {{ game.createdBy.name }} on {{ game.createdOn | date:'medium'}} | Status : {{ game.state }}</i></p>
                         <div class="btn-group" role="group">
-                            <a type="button" ng-click="joinGame(game._id)" ng-disabled="!canJoinGame(game)" class="btn btn-sm btn-primary">Join</a>
+                            <a type="button" ng-click="joinGame(game._id)" ng-disabled="!vm.canJoinGame(game)" class="btn btn-sm btn-primary">Join</a>
                             <a ui-sref="mahjong.view.board({gameId : game._id})" type="button" class="btn btn-sm btn-default">View</a>
                         </div>
                     </div>
@@ -19,7 +19,7 @@
         </div>
         <hr />
         <nav class="table-footer">
-            <pagination total-items="bigTotalItems" ng-change="pageChanged()" ng-model="currentPage" max-size="maxSize" class="pagination-sm" boundary-links="true"></pagination>
+            <pagination total-items="vm.bigTotalItems" ng-change="vm.pageChanged()" ng-model="vm.currentPage" max-size="vm.maxSize" class="pagination-sm" boundary-links="true"></pagination>
         </nav>
     </div>
     <div class="col-md-3">
@@ -31,18 +31,18 @@
                 <form class="form-horizontal">
                     <div class="form-group">
                         <label>Created by</label>
-                        <input type="text" ng-model="gamesFilter.createdBy" placeholder="Avans e-mail" class="form-control" />
+                        <input type="text" ng-model="vm.gamesFilter.createdBy" placeholder="Avans e-mail" class="form-control" />
                     </div>
                     <div class="form-group">
                         <label>Template</label>
-                        <select class="form-control" ng-model="gamesFilter.gameTemplate">
+                        <select class="form-control" ng-model="vm.gamesFilter.gameTemplate">
                             <option value="">All</option>
-                            <option value="{{template._id}}" ng-repeat="template in templates">{{template._id}}</option>
+                            <option value="{{template._id}}" ng-repeat="template in vm.templates">{{template._id}}</option>
                         </select>
                     </div>
                     <div class="form-group">
                         <label>State</label>
-                        <select class="form-control" ng-model="gamesFilter.state">
+                        <select class="form-control" ng-model="vm.gamesFilter.state">
                             <option value="">Any</option>
                             <option value="playing">Playing</option>
                             <option value="finished">Finished</option>
@@ -50,7 +50,7 @@
                         </select>
                     </div>
                     <div class="form-group">
-                        <button class="btn btn-block btn-primary" ng-click="loadGames()">Search</button>
+                        <button class="btn btn-block btn-primary" ng-click="vm.loadGames()">Search</button>
                     </div>
                 </form>
             </div>

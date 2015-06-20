@@ -1,50 +1,45 @@
-/**
- * Game View Controller
- */
-angular.module('mahjong.games')
-    .controller('GameViewController', ['$scope', 'game', 'gameFactory', 'ngToast', 'socket', 'config', '$state', function($scope, game, gameFactory, ngToast, socket, config, $state) {
+(function() {
+    'use strict';
+    
+    angular
+        .module('mahjong.games')
+        .controller('GameViewController', GameViewController);
+    
+    GameViewController.$inject = ['game', 'gameService', 'ngToast', 'socket', 'config'];
+    
+    function GameViewController(game, gameService, ngToast, socket, config)
+    {
+        /* jshint validthis: true */
+        var vm = this;
 
-        /**
-         * The game object.
-         * @type Object
-         */
-        $scope.game = game.data;
+        vm.game = game.data;
+        vm.startGame = startGame;
+        vm.canJoinGame = canJoinGame;
+        vm.joinGame = joinGame;
 
-        /**
-         * Start the game
-         */
-        $scope.startGame = function()
+        function startGame()
         {
-            gameFactory.start($scope.game._id).then(function(res) {
+            gameService.start(vm.game._id).then(function(res) {
                 ngToast.create({className: 'success', content: res.data});
             }, function(res) {
                 ngToast.create({className: 'warning', content: res.data.message});
             });
-        };
+        }
 
-        /**
-         * Whether or not the current auth user can join this game
-         * @param game
-         */
-        $scope.canJoinGame = function() {
-            return gameFactory.canJoinGame($scope.game);
-        };
+        function canJoinGame() {
+            return gameService.canJoinGame(vm.game);
+        }
 
-        /**
-         * Join a game
-         * @param id
-         */
-        $scope.joinGame = function() {
-            gameFactory.join($scope.game._id).then(function(res) {
+        function joinGame() {
+            gameService.join(vm.game._id).then(function(res) {
                 ngToast.create("Game joined!");
             }, function(res) {
                 ngToast.create({className: 'warning', content: res.data.message});
             });
-        };
+        }
 
         // Initialize dynamic socket endpoint
-        var socketEndPoint = config.apiUrl + '?gameId='+$scope.game._id;
+        var socketEndPoint = config.apiUrl + '?gameId='+vm.game._id;
         socket.initialize(io(socketEndPoint));
-
-
-    }]);
+    }
+})();
