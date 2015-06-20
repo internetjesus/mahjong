@@ -1,6 +1,3 @@
-/**
- * Tile directive
- */
 (function() {
     'use strict';
 
@@ -15,7 +12,8 @@
             restrict: 'E',
             replace: true,
             templateUrl: 'app/components/tiles/tileTemplate.html',
-            link: function(scope, elem, attrs) {
+            link: function(scope, elem, attrs)
+            {
                 // Manipulate the DOM
                 elem.addClass(scope.tile.tile.suit);
                 elem.addClass(scope.tile.tile.suit + '-' + scope.tile.tile.name);

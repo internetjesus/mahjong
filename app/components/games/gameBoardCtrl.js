@@ -5,9 +5,9 @@
         .module('mahjong.games')
         .controller('GameBoardController', GameBoardController);
 
-    GameBoardController.$inject = ['game', 'socket', 'tiles', 'gameService', 'ngToast', 'authFactory'];
+    GameBoardController.$inject = ['game', 'socket', 'tiles', 'gameService', 'ngToast', 'authFactory', '$state'];
 
-    function GameBoardController(game, socket, tiles, gameService, ngToast, authFactory)
+    function GameBoardController(game, socket, tiles, gameService, ngToast, authFactory, $state)
     {
         /* jshint validthis: true */
         var vm = this;
@@ -22,6 +22,11 @@
 
         function init()
         {
+            if (game == null) {
+                ngToast.create({className: 'warning', content: r.data.message});
+                $state.go('mahjong.games');
+            }
+
             vm.game = game.data;
             vm.tiles = (tiles) ? tiles.data : null;
 
@@ -112,7 +117,6 @@
                 if (tile == x)
                     return true;
 
-
                 if ((x.xPos + 2) == tile.xPos && tile.zPos <=  x.zPos && (x.yPos == tile.yPos || tile.yPos == x.yPos + 1)) {
                     blockedFromLeft = true;
                 } else if ((x.xPos - 2) == tile.xPos && tile.zPos <= x.zPos && (x.yPos == tile.yPos || tile.yPos == x.yPos + 1)) {
@@ -126,6 +130,15 @@
 
             return (blockedFromTop || (blockedFromRight && blockedFromLeft));
         }
+
+        socket.on('start', function(res)
+        {
+            vm.game.state = 'playing';
+
+            gameService.getGameTiles(vm.game._id, false).then(function(res) {
+                vm.tiles = res.data;
+            });
+        });
 
         socket.on('match', function(res)
         {
@@ -145,7 +158,7 @@
         socket.on('end', function(res)
         {
             vm.game.state = 'finished';
-            vm.canPlay = isAllowedToPlay();
+            vm.canPlay = false;
             ngToast.create({className:'info', content: 'This game has ended!'});
         });
     }

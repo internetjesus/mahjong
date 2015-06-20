@@ -117,14 +117,7 @@ mahjong.config(['$httpProvider', function($httpProvider) {
                 controller: 'GameViewController as vm',
                 resolve: {
                     game:  ['gameService', '$stateParams', 'ngToast', '$state', function(gameService, $stateParams, ngToast, $state) {
-
-                        return gameService.getById($stateParams.gameId).then(function(r) {
-                            return r;
-                        }, function(r) {
-                            ngToast.create({className: 'warning', content: r.data.message});
-                            $state.go('mahjong.games');
-                        });
-
+                        return gameService.getById($stateParams.gameId);
                     }]
                 }
             })
@@ -135,9 +128,7 @@ mahjong.config(['$httpProvider', function($httpProvider) {
                 resolve: {
                     tiles:  ['gameService', '$state', 'game', function(gameService, $state, game){
                         if (game.data.state != 'open') {
-                            return gameService.getGameTiles(game.data._id, false).then(function (r) {
-                                return r;
-                            });
+                            return gameService.getGameTiles(game.data._id, false);
                         } else {
                             return null;
                         }
@@ -150,12 +141,7 @@ mahjong.config(['$httpProvider', function($httpProvider) {
                 controller: 'PlayerListController as vm',
                 resolve: {
                     players:  ['gameService', '$stateParams', 'ngToast', '$state', function(gameService, $stateParams, ngToast, $state){
-                        return gameService.getGamePlayers($stateParams.gameId).then(function(r) {
-                            return r;
-                        }, function(r) {
-                            ngToast.create({className: 'warning', content: r.data.message});
-                            $state.go('mahjong.games');
-                        });
+                        return gameService.getGamePlayers($stateParams.gameId);
                     }]
                 }
             })
@@ -165,11 +151,7 @@ mahjong.config(['$httpProvider', function($httpProvider) {
                 controller: 'GameMatchesController',
                 resolve: {
                     matchedTiles:  ['gameService', '$stateParams', function(gameService, $stateParams){
-                        return gameService.getGameTiles($stateParams.gameId, true).then(function(r) {
-                            return r;
-                        }, function(r) {
-                            return null;
-                        });
+                        return gameService.getGameTiles($stateParams.gameId, true);
                     }]
                 }
             })
@@ -199,9 +181,9 @@ mahjong.config(['$httpProvider', function($httpProvider) {
         .module('mahjong.games')
         .controller('GameBoardController', GameBoardController);
 
-    GameBoardController.$inject = ['game', 'socket', 'tiles', 'gameService', 'ngToast', 'authFactory'];
+    GameBoardController.$inject = ['game', 'socket', 'tiles', 'gameService', 'ngToast', 'authFactory', '$state'];
 
-    function GameBoardController(game, socket, tiles, gameService, ngToast, authFactory)
+    function GameBoardController(game, socket, tiles, gameService, ngToast, authFactory, $state)
     {
         /* jshint validthis: true */
         var vm = this;
@@ -216,6 +198,11 @@ mahjong.config(['$httpProvider', function($httpProvider) {
 
         function init()
         {
+            if (game == null) {
+                ngToast.create({className: 'warning', content: r.data.message});
+                $state.go('mahjong.games');
+            }
+
             vm.game = game.data;
             vm.tiles = (tiles) ? tiles.data : null;
 
@@ -306,7 +293,6 @@ mahjong.config(['$httpProvider', function($httpProvider) {
                 if (tile == x)
                     return true;
 
-
                 if ((x.xPos + 2) == tile.xPos && tile.zPos <=  x.zPos && (x.yPos == tile.yPos || tile.yPos == x.yPos + 1)) {
                     blockedFromLeft = true;
                 } else if ((x.xPos - 2) == tile.xPos && tile.zPos <= x.zPos && (x.yPos == tile.yPos || tile.yPos == x.yPos + 1)) {
@@ -320,6 +306,15 @@ mahjong.config(['$httpProvider', function($httpProvider) {
 
             return (blockedFromTop || (blockedFromRight && blockedFromLeft));
         }
+
+        socket.on('start', function(res)
+        {
+            vm.game.state = 'playing';
+
+            gameService.getGameTiles(vm.game._id, false).then(function(res) {
+                vm.tiles = res.data;
+            });
+        });
 
         socket.on('match', function(res)
         {
@@ -339,7 +334,7 @@ mahjong.config(['$httpProvider', function($httpProvider) {
         socket.on('end', function(res)
         {
             vm.game.state = 'finished';
-            vm.canPlay = isAllowedToPlay();
+            vm.canPlay = false;
             ngToast.create({className:'info', content: 'This game has ended!'});
         });
     }
@@ -647,25 +642,25 @@ mahjong.config(['$httpProvider', function($httpProvider) {
         });
     }
 })();
-/**
- * Tile directive
- */
-angular.module('mahjong.games').directive('chooseTemplate', function() {
-    return {
-        name: 'chooseTemplate',
-        restrict: 'E',
-        replace: true,
-        templateUrl: 'app/components/templates/chooseTemplateDirective.html',
-        controller: ['$scope', 'templateService', function($scope, templateService) {
-            templateService.getAll().then(function(response) {
-                $scope.templates = response.data;
-            });
-        }],
-        link: function(scope, elem, attrs) {
-
-        }
-    }
-});
+///**
+// * Tile directive
+// */
+//angular.module('mahjong.games').directive('chooseTemplate', function() {
+//    return {
+//        name: 'chooseTemplate',
+//        restrict: 'E',
+//        replace: true,
+//        templateUrl: 'app/components/templates/chooseTemplateDirective.html',
+//        controller: ['$scope', 'templateService', function($scope, templateService) {
+//            templateService.getAll().then(function(response) {
+//                $scope.templates = response.data;
+//            });
+//        }],
+//        link: function(scope, elem, attrs) {
+//
+//        }
+//    }
+//});
 (function() {
     'use strict';
 
@@ -689,9 +684,6 @@ angular.module('mahjong.games').directive('chooseTemplate', function() {
         }
     }
 })();
-/**
- * Tile directive
- */
 (function() {
     'use strict';
 
@@ -706,7 +698,8 @@ angular.module('mahjong.games').directive('chooseTemplate', function() {
             restrict: 'E',
             replace: true,
             templateUrl: 'app/components/tiles/tileTemplate.html',
-            link: function(scope, elem, attrs) {
+            link: function(scope, elem, attrs)
+            {
                 // Manipulate the DOM
                 elem.addClass(scope.tile.tile.suit);
                 elem.addClass(scope.tile.tile.suit + '-' + scope.tile.tile.name);
@@ -840,40 +833,44 @@ angular.module('mahjong').controller('BaseController', ['$scope', 'config', 'aut
         authFactory.destroy();
     }
 }]);
-/**
- * Socket factory
- */
-angular.module('mahjong').factory('socket', ['$rootScope', function($rootScope) {
-    var socket = null;
-    return {
-        initialize: function(connection) {
-            socket = connection;
-        },
-        on: function (eventName, callback) {
-            if (socket == null) {
-                return;
-            }
+(function() {
+    'use strict';
 
-            socket.on(eventName, function () {
-                var args = arguments;
-                $rootScope.$apply(function () {
-                    callback.apply(socket, args);
-                });
-            });
-        },
-        emit: function (eventName, data, callback) {
-            if (socket == null) {
-                return;
-            }
-
-            socket.emit(eventName, data, function () {
-                var args = arguments;
-                $rootScope.$apply(function () {
-                    if (callback) {
-                        callback.apply(socket, args);
+    angular
+        .module('mahjong')
+        .factory('socket', ['$rootScope', function($rootScope) {
+            var socket = null;
+            return {
+                initialize: function(connection) {
+                    socket = connection;
+                },
+                on: function (eventName, callback) {
+                    if (socket == null) {
+                        return;
                     }
-                });
-            })
-        }
-    };
-}]);
+
+                    socket.on(eventName, function () {
+                        var args = arguments;
+                        $rootScope.$apply(function () {
+                            callback.apply(socket, args);
+                        });
+                    });
+                },
+                emit: function (eventName, data, callback) {
+                    if (socket == null) {
+                        return;
+                    }
+
+                    socket.emit(eventName, data, function () {
+                        var args = arguments;
+                        $rootScope.$apply(function () {
+                            if (callback) {
+                                callback.apply(socket, args);
+                            }
+                        });
+                    })
+                }
+            };
+    }]);
+})();
+

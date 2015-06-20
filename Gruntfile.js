@@ -1,12 +1,12 @@
 module.exports = function(grunt) {
     grunt.initConfig({
-        //uglify: {
-        //    js: {
-        //        files: {
-        //            'dist/js/app.min.js': ['dist/js/app.js']
-        //        }
-        //    }
-        //},
+        uglify: {
+            js: {
+                files: {
+                    'build/core.min.js': ['build/core.js']
+                }
+            }
+        },
         concat: {
             dist: {
                 src: ['app/**/*.js'],
@@ -66,5 +66,5 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-contrib-concat');
 
     // The default tasks to run when you type: grunt
-    grunt.registerTask('default', ['sass', 'ngtemplates', 'concat', 'watch']);
+    grunt.registerTask('default', ['sass', 'ngtemplates', 'concat', 'uglify', 'watch']);
 };

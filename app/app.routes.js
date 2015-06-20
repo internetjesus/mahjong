@@ -44,14 +44,7 @@
                 controller: 'GameViewController as vm',
                 resolve: {
                     game:  ['gameService', '$stateParams', 'ngToast', '$state', function(gameService, $stateParams, ngToast, $state) {
-
-                        return gameService.getById($stateParams.gameId).then(function(r) {
-                            return r;
-                        }, function(r) {
-                            ngToast.create({className: 'warning', content: r.data.message});
-                            $state.go('mahjong.games');
-                        });
-
+                        return gameService.getById($stateParams.gameId);
                     }]
                 }
             })
@@ -62,9 +55,7 @@
                 resolve: {
                     tiles:  ['gameService', '$state', 'game', function(gameService, $state, game){
                         if (game.data.state != 'open') {
-                            return gameService.getGameTiles(game.data._id, false).then(function (r) {
-                                return r;
-                            });
+                            return gameService.getGameTiles(game.data._id, false);
                         } else {
                             return null;
                         }
@@ -77,12 +68,7 @@
                 controller: 'PlayerListController as vm',
                 resolve: {
                     players:  ['gameService', '$stateParams', 'ngToast', '$state', function(gameService, $stateParams, ngToast, $state){
-                        return gameService.getGamePlayers($stateParams.gameId).then(function(r) {
-                            return r;
-                        }, function(r) {
-                            ngToast.create({className: 'warning', content: r.data.message});
-                            $state.go('mahjong.games');
-                        });
+                        return gameService.getGamePlayers($stateParams.gameId);
                     }]
                 }
             })
@@ -92,11 +78,7 @@
                 controller: 'GameMatchesController',
                 resolve: {
                     matchedTiles:  ['gameService', '$stateParams', function(gameService, $stateParams){
-                        return gameService.getGameTiles($stateParams.gameId, true).then(function(r) {
-                            return r;
-                        }, function(r) {
-                            return null;
-                        });
+                        return gameService.getGameTiles($stateParams.gameId, true);
                     }]
                 }
             })
