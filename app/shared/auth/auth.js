@@ -1,4 +1,7 @@
-/**
- * Authentication module
- */
-angular.module('mahjong.auth', []);
+(function() {
+    'use strict';
+
+    angular
+        .module('mahjong.auth', []);
+
+})();

@@ -13,7 +13,7 @@
                 <hr />
                 <button class="btn btn-lg btn-block btn-default" ng-click="vm.joinGame()" ng-disabled="!vm.canJoinGame()">Join this game!</button>
                 <button class="btn btn-lg btn-block btn-default">Change tiles</button>
-                <button class="btn btn-lg btn-block btn-success" ng-click="vm.startGame()" ng-hide="vm.game.createdBy._id != $root.auth.username || vm.game.state != 'open'">Start game</button>
+                <button class="btn btn-lg btn-block btn-success" ng-click="vm.startGame()" ng-hide="vm.game.createdBy._id != $root.auth.getUsername() || vm.game.state != 'open'">Start game</button>
             </div>
             <div class="panel-footer"></div>
         </div>

@@ -726,98 +726,101 @@ angular.module('mahjong.games').directive('chooseTemplate', function() {
         }
     }
 })();
-/**
- * Authentication module
- */
-angular.module('mahjong.auth', []);
-/**
- * Auth factory
- */
-angular.module('mahjong.auth')
-    .factory('authFactory', ['config', 'localStorageService', function(config, localStorageService) {
+(function() {
+    'use strict';
 
-        var authFactory = {};
+    angular
+        .module('mahjong.auth', []);
 
-        authFactory.username = '';
+})();
+(function() {
+    'use strict';
 
-        authFactory.initialize = function () {
-            authFactory.username = authFactory.getUsername();
+    angular
+        .module('mahjong.auth')
+        .factory('authFactory', authFactory);
+
+    authFactory.$inject = ['config', 'localStorageService'];
+
+    function authFactory(config, localStorageService)
+    {
+        var username = '';
+
+        var factory = {
+            username : username,
+            initialize : initialize,
+            isGuest : isGuest,
+            store : store,
+            destroy : destroy,
+            getUsername : getUsername,
+            getToken : getToken
         };
 
-        /**
-         * Is guest
-         * @returns {boolean}
-         */
-        authFactory.isGuest = function()
+        return factory;
+
+        function initialize()
+        {
+            username = getUsername();
+        }
+
+        function isGuest()
         {
             return (localStorageService.get('token') == null);
-        };
+        }
 
-        /**
-         * Store user oAuth data
-         */
-        authFactory.store = function(username, token)
+        function store(oauthName, token)
         {
-            authFactory.username = username;
+            username = oauthName;
+
             localStorageService.set('username', username);
             localStorageService.set('token', token);
-        };
+        }
 
-        /**
-         * Log the user out
-         */
-        authFactory.destroy = function()
+        function destroy()
         {
-            authFactory.username = '';
+            username = '';
             localStorageService.remove('username', 'token');
             localStorageService.clearAll();
 
             return true;
-        };
+        }
 
-        /**
-         * Get the username
-         * @returns {*}
-         */
-        authFactory.getUsername = function()
+        function getUsername()
         {
             return localStorageService.get('username');
-        };
+        }
 
-        /**
-         * Get the token
-         * @returns {*}
-         */
-        authFactory.getToken = function()
+        function getToken()
         {
             return localStorageService.get('token');
-        };
-
-        return authFactory;
-    }]);
-/**
- *
- */
-angular.module('mahjong.auth').factory('HttpRequestInterceptor', ['$q', '$log', 'authFactory', function($q, $log, authFactory) {
-    return {
-
-        /**
-         * Append token and username to the outgoing request
-         *
-         * @param config
-         * @returns {*}
-         */
-        'request': function(config) {
-
-            if(!authFactory.isGuest()) {
-                config.headers['x-username'] = authFactory.getUsername();
-                config.headers['x-token']    = authFactory.getToken();
-            }
-
-            return config;
         }
-    };
-}]);
+    }
+})();
+(function() {
+    'use strict';
+
+    angular
+        .module('mahjong.auth')
+        .factory('HttpRequestInterceptor', HttpRequestInterceptor);
+
+    HttpRequestInterceptor.$inject = ['authFactory'];
+
+    function HttpRequestInterceptor(authFactory)
+    {
+        return {
+            'request': function(config) {
+
+                if(!authFactory.isGuest()) {
+                    config.headers['x-username'] = authFactory.getUsername();
+                    config.headers['x-token']    = authFactory.getToken();
+                }
+
+                return config;
+            }
+        };
+    }
+
+})();
 /**
  * Base controller
  */

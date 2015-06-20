@@ -1,65 +1,63 @@
-/**
- * Auth factory
- */
-angular.module('mahjong.auth')
-    .factory('authFactory', ['config', 'localStorageService', function(config, localStorageService) {
+(function() {
+    'use strict';
 
-        var authFactory = {};
+    angular
+        .module('mahjong.auth')
+        .factory('authFactory', authFactory);
 
-        authFactory.username = '';
+    authFactory.$inject = ['config', 'localStorageService'];
 
-        authFactory.initialize = function () {
-            authFactory.username = authFactory.getUsername();
+    function authFactory(config, localStorageService)
+    {
+        var username = '';
+
+        var factory = {
+            username : username,
+            initialize : initialize,
+            isGuest : isGuest,
+            store : store,
+            destroy : destroy,
+            getUsername : getUsername,
+            getToken : getToken
         };
 
-        /**
-         * Is guest
-         * @returns {boolean}
-         */
-        authFactory.isGuest = function()
+        return factory;
+
+        function initialize()
+        {
+            username = getUsername();
+        }
+
+        function isGuest()
         {
             return (localStorageService.get('token') == null);
-        };
+        }
 
-        /**
-         * Store user oAuth data
-         */
-        authFactory.store = function(username, token)
+        function store(oauthName, token)
         {
-            authFactory.username = username;
+            username = oauthName;
+
             localStorageService.set('username', username);
             localStorageService.set('token', token);
-        };
+        }
 
-        /**
-         * Log the user out
-         */
-        authFactory.destroy = function()
+        function destroy()
         {
-            authFactory.username = '';
+            username = '';
             localStorageService.remove('username', 'token');
             localStorageService.clearAll();
 
             return true;
-        };
+        }
 
-        /**
-         * Get the username
-         * @returns {*}
-         */
-        authFactory.getUsername = function()
+        function getUsername()
         {
             return localStorageService.get('username');
-        };
+        }
 
-        /**
-         * Get the token
-         * @returns {*}
-         */
-        authFactory.getToken = function()
+        function getToken()
         {
             return localStorageService.get('token');
-        };
-
-        return authFactory;
-    }]);
+        }
+    }
+})();
