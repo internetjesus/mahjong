@@ -2,64 +2,46 @@ describe("Game tests", function() {
 
     beforeEach(module('mahjong'));
 
-    var gameListController, templates, ngToast, state, gameService, fakeTemplateService;
+    var gameListController, gameService, ngToast, state, templates;
 
     // Prepare the fake gameService
     beforeEach(function() {
-        //fakeGameService = {
-        //    getAll: function(pageSize, pageIndex, gameTemplate, state, createdBy) {
-        //        deferred = q.defer();
-        //        deferred.resolve({ "_id": "1234" });
-        //        return deferred.promise;
-        //    }
-        //};
-
-        fakeTemplateService = {
-            getAll : function() {
-                deferred = q.defer();
-                deferred.resolve({data: { "_id": "Ox" }});
-                return deferred.promise;
+        fakeGameService = {
+            getAll: function(pageSize, pageIndex, gameTemplate, state, createdBy) {
+                return {
+                    success : function(response, status, headers) {
+                        deferred = q.defer();
+                        deferred.resolve({ "_id": "1234" });
+                        return deferred.promise;
+                    }
+                };
             }
         };
 
-        //spyOn(fakeGameService, 'getAll');
-        spyOn(fakeTemplateService, 'getAll');
+        spyOn(fakeGameService, 'getAll');
     });
 
 
     beforeEach(inject(function($controller, $injector){
-        gameService = $injector.get("gameService");
-        templates = $injector.get("templateService");
+        // Inject fake templates data
+        templates = { data: [{_id: "Ox"}, {_id : "Shanghai"}]};
         ngToast = $injector.get("ngToast");
         state = $injector.get("$state");
-
-        q = $injector.get('$q');
+        gameService = $injector.get("gameService");
 
         gameListController = $controller("GameListController", {
-            templates: fakeTemplateService,
+            templates: templates,
             gameService : gameService,
             ngToast : ngToast,
             $state : state
         });
     }));
 
-    it('should sort by date by default', function() {
+    it('should default sort games by date', function() {
         expect(gameListController.sortType).toEqual('createdOn');
     });
 
     it('should contain a list of templates', function() {
-        expect(gameListController.loadGames).toBeDefined();
-    });
-
-    it('should join a game', function() {
-        var test = [1,2,3,4];
-
-        expect(test).toEqual([1,2,3,4]);
-    });
-
-    it('should create a new game', function() {
-        var test = [1,2,3,4];
-
-        expect(test).toEqual([1,2,3,4]);
+        expect(gameListController.templates).toEqual([{_id: "Ox"}, {_id : "Shanghai"}]);
     });
 });

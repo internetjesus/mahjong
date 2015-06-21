@@ -7,6 +7,7 @@ module.exports = function(config) {
             'node_modules/angular-mocks/angular-mocks.js',
             'node_modules/angular-local-storage/dist/angular-local-storage.js',
             'node_modules/angular-loading-bar/build/loading-bar.js',
+            'node_modules/underscore/underscore-min.js',
             'bower_components/angular-sanitize/angular-sanitize.min.js',
             'bower_components/ngtoast/dist/ngToast.min.js',
             'bower_components/angular-bootstrap/ui-bootstrap.min.js',

@@ -23,7 +23,6 @@
         function init()
         {
             if (game == null) {
-                ngToast.create({className: 'warning', content: r.data.message});
                 $state.go('mahjong.games');
             }
 
