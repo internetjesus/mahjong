@@ -211,7 +211,7 @@ mahjong.config(['$httpProvider', function($httpProvider) {
             clearTileSet();
             vm.canPlay = isAllowedToPlay();
 
-            if (!vm.canPlay && vm.game.state == 'playing') ngToast.create({className: 'info', content: 'You are spectating this game! You have no power here...'});
+            if (!vm.canPlay && vm.game.state == 'playing') ngToast.create({className: 'warning', content: 'You are spectating this game! You have no power here...'});
         }
 
         function isAllowedToPlay()
@@ -319,8 +319,6 @@ mahjong.config(['$httpProvider', function($httpProvider) {
         {
             var socketEndPoint = config.apiUrl + '?gameId='+vm.game._id;
             var socket = io(socketEndPoint, {"force new connection":true});
-
-            console.log(socketEndPoint);
 
             socket.on('start', function (res) {
                 vm.game.state = 'playing';
