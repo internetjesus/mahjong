@@ -23,7 +23,6 @@
 
         return service;
 
-
         function getAll(pageSize, pageIndex, gameTemplate, state, createdBy)
         {
             var filter = {

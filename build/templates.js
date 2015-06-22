@@ -2,12 +2,17 @@ angular.module('mahjong').run(['$templateCache', function($templateCache) {
   'use strict';
 
   $templateCache.put('app/components/games/gameBoard.html',
-    "<div class=\"game-board\"><div class=\"tile-wrapper tile-style-1\" ng-show=\"vm.tiles != null\"><tile ng-repeat=\"tile in vm.tiles\" ng-click=\"vm.tileClick(tile)\" tile=\"tile\"></tile></div><img src=\"/assets/img/tumblr_mf71km11Pd1rl8vbqo1_400.gif\" class=\"waiting\" ng-show=\"vm.tiles==null\"></div>"
+    "<div class=\"game-board\"><div class=\"tile-wrapper tile-style-1\" ng-show=\"vm.tiles != null\"><tile ng-repeat=\"tile in vm.tiles\" ng-click=\"vm.tileClick(tile)\" tile=\"tile\"></tile></div><div id=\"waiting\"><div class=\"well well-sm text-center\"><h3>Waiting for host to start the game...</h3></div></div></div>"
   );
 
 
   $templateCache.put('app/components/games/gameCreate.html',
     "<div class=\"row\"><div class=\"col-md-4 col-md-offset-4\"><form name=\"newGame\" ng-submit=\"vm.createGame(newGame.$valid)\" novalidate><h4 class=\"form-header\">Start new Mahjong game</h4><div class=\"form-group\"><label class=\"control-label\">Template</label><select class=\"form-control\" ng-model=\"vm.game.templateName\"><option value=\"{{template._id}}\" ng-repeat=\"template in vm.templates\">{{template._id}}</option></select><p class=\"help-block\">Choose the game board layout</p></div><div class=\"form-group\"><div class=\"row\"><div class=\"col-md-6\"><label class=\"control-label\">Min players</label><input type=\"number\" ng-model=\"vm.game.minPlayers\" ng-required=\"true\" class=\"form-control\" name=\"minPlayers\" placeholder=\"1\"></div><div class=\"col-md-6\"><label class=\"control-label\">Max players</label><input type=\"number\" ng-model=\"vm.game.maxPlayers\" ng-required=\"true\" class=\"form-control\" name=\"maxPlayers\" placeholder=\"4\"></div></div></div><hr><button type=\"submit\" class=\"btn btn-primary btn-block\" ng-disabled=\"newGame.$invalid\">Create game</button></form></div></div>"
+  );
+
+
+  $templateCache.put('app/components/games/gameHistory.html',
+    "<table class=\"table table-responsive\"><thead><tr><td>Name</td><td>Matches</td><td>Date</td></tr></thead><tbody><tr><td></td><td></td></tr></tbody></table>"
   );
 
 
@@ -17,7 +22,7 @@ angular.module('mahjong').run(['$templateCache', function($templateCache) {
 
 
   $templateCache.put('app/components/games/gameView.html',
-    "<div class=\"row\"><div class=\"col-md-10\"><div ui-view></div></div><div class=\"col-md-2\"><div class=\"panel panel-default\"><div class=\"panel-heading\"><h5>Menu</h5></div><div class=\"panel-body\"><a ui-sref=\"mahjong.view.board\" type=\"button\" class=\"btn btn-lg btn-block btn-default\"><span class=\"glyphicon glyphicon-th pull-left\"></span> Board</a> <a ui-sref=\"mahjong.view.players\" type=\"button\" class=\"btn btn-lg btn-block btn-default\"><span class=\"glyphicon glyphicon-user pull-left\"></span> Lobby</a> <a ui-sref=\"mahjong.view.players\" type=\"button\" class=\"btn btn-lg btn-block btn-default\"><span class=\"glyphicon glyphicon-eye-open pull-left\"></span> Matches</a> <a ui-sref=\"mahjong.view.players\" type=\"button\" class=\"btn btn-lg btn-block btn-default\"><span class=\"glyphicon glyphicon-question-sign pull-left\"></span> Help</a><hr><button class=\"btn btn-lg btn-block btn-default\" ng-click=\"vm.joinGame()\" ng-disabled=\"!vm.canJoinGame()\">Join this game!</button> <button class=\"btn btn-lg btn-block btn-default\">Change tiles</button> <button class=\"btn btn-lg btn-block btn-success\" ng-click=\"vm.startGame()\" ng-hide=\"vm.game.createdBy._id != $root.auth.getUsername() || vm.game.state != 'open'\">Start game</button></div><div class=\"panel-footer\"></div></div></div></div>"
+    "<div class=\"row\"><div class=\"col-md-10\"><div ui-view></div></div><div class=\"col-md-2\"><div class=\"panel panel-default\"><div class=\"panel-heading\"><h5>Menu</h5></div><div class=\"panel-body\"><a ui-sref=\"mahjong.view.board\" type=\"button\" class=\"btn btn-lg btn-block btn-default\"><span class=\"glyphicon glyphicon-th pull-left\"></span> Board</a> <a ui-sref=\"mahjong.view.players\" type=\"button\" class=\"btn btn-lg btn-block btn-default\"><span class=\"glyphicon glyphicon-user pull-left\"></span> Lobby</a> <a ui-sref=\"mahjong.view.players\" type=\"button\" class=\"btn btn-lg btn-block btn-default\"><span class=\"glyphicon glyphicon-eye-open pull-left\"></span> History</a> <a ui-sref=\"mahjong.view.players\" type=\"button\" class=\"btn btn-lg btn-block btn-default\"><span class=\"glyphicon glyphicon-question-sign pull-left\"></span> Help</a><hr><button class=\"btn btn-lg btn-block btn-default\" ng-click=\"vm.joinGame()\" ng-disabled=\"!vm.canJoinGame()\">Join this game!</button> <button class=\"btn btn-lg btn-block btn-default\">Change tiles</button> <button class=\"btn btn-lg btn-block btn-success\" ng-click=\"vm.startGame()\" ng-hide=\"vm.game.createdBy._id != $root.auth.getUsername() || vm.game.state != 'open'\">Start game</button></div><div class=\"panel-footer\"></div></div></div></div>"
   );
 
 

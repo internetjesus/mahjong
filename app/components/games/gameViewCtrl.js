@@ -5,9 +5,9 @@
         .module('mahjong.games')
         .controller('GameViewController', GameViewController);
     
-    GameViewController.$inject = ['game', 'gameService', 'ngToast', 'socket', 'config'];
+    GameViewController.$inject = ['game', 'gameService', 'ngToast'];
     
-    function GameViewController(game, gameService, ngToast, socket, config)
+    function GameViewController(game, gameService, ngToast)
     {
         /* jshint validthis: true */
         var vm = this;
@@ -22,9 +22,6 @@
         function init()
         {
             vm.game = game.data;
-
-            var socketEndPoint = config.apiUrl + '?gameId='+vm.game._id;
-            socket.initialize(io(socketEndPoint));
         }
 
         function startGame()
@@ -47,15 +44,5 @@
                 ngToast.create({className: 'warning', content: res.data.message});
             });
         }
-
-        socket.on('start', function(res)
-        {
-            vm.game.state = 'playing';
-        });
-
-        socket.on('end', function(res)
-        {
-            vm.game.state = 'finished';
-        });
     }
 })();

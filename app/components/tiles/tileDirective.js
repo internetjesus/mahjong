@@ -21,6 +21,8 @@
                 elem.css('top', (scope.tile.yPos * 43 - (scope.tile.zPos * 10)) + 'px');
                 elem.css('left', (scope.tile.xPos * 33 + (scope.tile.zPos * 10)) + 'px');
 
+                if (scope.tile.zPos == 0) elem.addClass('light-shadow');
+
                 scope.$watch('tile.clicked', function()
                 {
                     if (scope.tile.clicked) {

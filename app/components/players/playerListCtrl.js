@@ -5,24 +5,34 @@
         .module('mahjong.games')
         .controller('PlayerListController', PlayerListController);
 
-    PlayerListController.$inject = ['players', 'socket'];
+    PlayerListController.$inject = ['game', 'players', 'config'];
 
-    function PlayerListController(players, socket)
+    function PlayerListController(game, players, config)
     {
-        /* */
+        /* jshint validthis: true */
         var vm = this;
 
         vm.players = {};
+        vm.game = {};
 
         init();
 
         function init()
         {
+            vm.game = game.data;
             vm.players = players.data;
+
+            initializeSockets();
         }
 
-        socket.on('playerJoined', function(res) {
-            vm.players.push(res);
-        });
+        function initializeSockets()
+        {
+            var socketEndPoint = config.apiUrl + '?gameId='+vm.game._id;
+            var socket = io(socketEndPoint, {"force new connection":true});
+
+            socket.on('playerJoined', function(res) {
+                vm.players.push(res);
+            });
+        }
     }
 })();

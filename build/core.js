@@ -146,12 +146,12 @@ mahjong.config(['$httpProvider', function($httpProvider) {
                 }
             })
             .state('mahjong.view.matches', {
-                url: '/matches',
-                templateUrl: 'app/components/games/gameMatches.html',
-                controller: 'GameMatchesController',
+                url: '/history',
+                templateUrl: 'app/components/games/gameHistory.html',
+                controller: 'GameHistoryController as vm',
                 resolve: {
-                    matchedTiles:  ['gameService', '$stateParams', function(gameService, $stateParams){
-                        return gameService.getGameTiles($stateParams.gameId, true);
+                    matchedTiles:  ['gameService', '$stateParams', 'game', function(gameService, $stateParams, game){
+                        return gameService.getGameTiles(game.data._id, true);
                     }]
                 }
             })
@@ -181,9 +181,9 @@ mahjong.config(['$httpProvider', function($httpProvider) {
         .module('mahjong.games')
         .controller('GameBoardController', GameBoardController);
 
-    GameBoardController.$inject = ['game', 'socket', 'tiles', 'gameService', 'ngToast', 'authFactory', '$state'];
+    GameBoardController.$inject = ['game', 'config', 'tiles', 'gameService', 'ngToast', 'authFactory', '$state'];
 
-    function GameBoardController(game, socket, tiles, gameService, ngToast, authFactory, $state)
+    function GameBoardController(game, config, tiles, gameService, ngToast, authFactory, $state)
     {
         /* jshint validthis: true */
         var vm = this;
@@ -205,6 +205,10 @@ mahjong.config(['$httpProvider', function($httpProvider) {
             vm.game = game.data;
             vm.tiles = (tiles) ? tiles.data : null;
 
+            // Initialize sockets
+            initializeSockets();
+
+            clearTileSet();
             vm.canPlay = isAllowedToPlay();
 
             if (!vm.canPlay && vm.game.state == 'playing') ngToast.create({className: 'info', content: 'You are spectating this game! You have no power here...'});
@@ -234,6 +238,9 @@ mahjong.config(['$httpProvider', function($httpProvider) {
 
                 if (vm.tileSet.length == 2) {
 
+                    // Disable clicking because we are going to validate it..
+                    vm.canPlay = false;
+
                     if (checkTileSetIsMatch()) {
                         gameService.match(vm.game._id, vm.tileSet[0]._id, vm.tileSet[1]._id).then(function (res) {
 
@@ -262,6 +269,8 @@ mahjong.config(['$httpProvider', function($httpProvider) {
             if (vm.tileSet[1] != null) vm.tileSet[1].clicked = false;
 
             vm.tileSet = [];
+
+            vm.canPlay = true; // Let the player click again
         }
 
         function checkTileSetIsMatch()
@@ -306,36 +315,46 @@ mahjong.config(['$httpProvider', function($httpProvider) {
             return (blockedFromTop || (blockedFromRight && blockedFromLeft));
         }
 
-        socket.on('start', function(res)
+        function initializeSockets()
         {
-            vm.game.state = 'playing';
+            var socketEndPoint = config.apiUrl + '?gameId='+vm.game._id;
+            var socket = io(socketEndPoint, {"force new connection":true});
 
-            gameService.getGameTiles(vm.game._id, false).then(function(res) {
-                vm.tiles = res.data;
+            console.log(socketEndPoint);
+
+            socket.on('start', function (res) {
+                vm.game.state = 'playing';
+
+                vm.canPlay = isAllowedToPlay();
+
+                gameService.getGameTiles(vm.game._id, false).then(function(res) {
+                    vm.tiles = res.data;
+                });
             });
-        });
 
-        socket.on('match', function(res)
-        {
-            for (var i = 0; i < vm.tiles.length; i++)
+            socket.on('match', function(res)
             {
-                if (vm.tiles[i]._id == res[0]._id)
+                console.log('Socket match');
+                for (var i = 0; i < vm.tiles.length; i++)
                 {
-                    vm.tiles.splice(i, 1);
+                    if (vm.tiles[i]._id == res[0]._id)
+                    {
+                        vm.tiles.splice(i, 1);
+                    }
+                    else if (vm.tiles[i]._id == res[0].match.otherTileId)
+                    {
+                        vm.tiles.splice(i, 1);
+                    }
                 }
-                else if (vm.tiles[i]._id == res[0].match.otherTileId)
-                {
-                    vm.tiles.splice(i, 1);
-                }
-            }
-        });
+            });
 
-        socket.on('end', function(res)
-        {
-            vm.game.state = 'finished';
-            vm.canPlay = false;
-            ngToast.create({className:'info', content: 'This game has ended!'});
-        });
+            socket.on('end', function(res)
+            {
+                vm.game.state = 'finished';
+                vm.canPlay = false;
+                ngToast.create({className:'info', content: 'This game has ended!'});
+            });
+        }
     }
 })();
 (function() {
@@ -373,6 +392,26 @@ mahjong.config(['$httpProvider', function($httpProvider) {
             }
         }
     }
+})();
+(function() {
+    'use strict';
+
+    angular
+        .module('mahjong.games')
+        .controller('GameHistoryController', GameHistoryController);
+
+    GameHistoryController.$inject = ['game', 'socket', 'matchedTiles'];
+
+    function GameHistoryController(game, socket, matchedTiles)
+    {
+        /* jshint validthis: true */
+        var vm = this;
+
+
+
+    }
+
+
 })();
 (function() {
     'use strict';
@@ -472,7 +511,6 @@ mahjong.config(['$httpProvider', function($httpProvider) {
 
         return service;
 
-
         function getAll(pageSize, pageIndex, gameTemplate, state, createdBy)
         {
             var filter = {
@@ -559,9 +597,9 @@ mahjong.config(['$httpProvider', function($httpProvider) {
         .module('mahjong.games')
         .controller('GameViewController', GameViewController);
     
-    GameViewController.$inject = ['game', 'gameService', 'ngToast', 'socket', 'config'];
+    GameViewController.$inject = ['game', 'gameService', 'ngToast'];
     
-    function GameViewController(game, gameService, ngToast, socket, config)
+    function GameViewController(game, gameService, ngToast)
     {
         /* jshint validthis: true */
         var vm = this;
@@ -576,9 +614,6 @@ mahjong.config(['$httpProvider', function($httpProvider) {
         function init()
         {
             vm.game = game.data;
-
-            var socketEndPoint = config.apiUrl + '?gameId='+vm.game._id;
-            socket.initialize(io(socketEndPoint));
         }
 
         function startGame()
@@ -601,16 +636,6 @@ mahjong.config(['$httpProvider', function($httpProvider) {
                 ngToast.create({className: 'warning', content: res.data.message});
             });
         }
-
-        socket.on('start', function(res)
-        {
-            vm.game.state = 'playing';
-        });
-
-        socket.on('end', function(res)
-        {
-            vm.game.state = 'finished';
-        });
     }
 })();
 (function() {
@@ -620,25 +645,35 @@ mahjong.config(['$httpProvider', function($httpProvider) {
         .module('mahjong.games')
         .controller('PlayerListController', PlayerListController);
 
-    PlayerListController.$inject = ['players', 'socket'];
+    PlayerListController.$inject = ['game', 'players', 'config'];
 
-    function PlayerListController(players, socket)
+    function PlayerListController(game, players, config)
     {
-        /* */
+        /* jshint validthis: true */
         var vm = this;
 
         vm.players = {};
+        vm.game = {};
 
         init();
 
         function init()
         {
+            vm.game = game.data;
             vm.players = players.data;
+
+            initializeSockets();
         }
 
-        socket.on('playerJoined', function(res) {
-            vm.players.push(res);
-        });
+        function initializeSockets()
+        {
+            var socketEndPoint = config.apiUrl + '?gameId='+vm.game._id;
+            var socket = io(socketEndPoint, {"force new connection":true});
+
+            socket.on('playerJoined', function(res) {
+                vm.players.push(res);
+            });
+        }
     }
 })();
 ///**
@@ -705,6 +740,8 @@ mahjong.config(['$httpProvider', function($httpProvider) {
                 elem.css('z-index', (scope.tile.yPos ) + ((scope.tile.zPos+1) * 50) - scope.tile.xPos);
                 elem.css('top', (scope.tile.yPos * 43 - (scope.tile.zPos * 10)) + 'px');
                 elem.css('left', (scope.tile.xPos * 33 + (scope.tile.zPos * 10)) + 'px');
+
+                if (scope.tile.zPos == 0) elem.addClass('light-shadow');
 
                 scope.$watch('tile.clicked', function()
                 {

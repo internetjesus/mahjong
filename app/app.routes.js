@@ -73,12 +73,12 @@
                 }
             })
             .state('mahjong.view.matches', {
-                url: '/matches',
-                templateUrl: 'app/components/games/gameMatches.html',
-                controller: 'GameMatchesController',
+                url: '/history',
+                templateUrl: 'app/components/games/gameHistory.html',
+                controller: 'GameHistoryController as vm',
                 resolve: {
-                    matchedTiles:  ['gameService', '$stateParams', function(gameService, $stateParams){
-                        return gameService.getGameTiles($stateParams.gameId, true);
+                    matchedTiles:  ['gameService', '$stateParams', 'game', function(gameService, $stateParams, game){
+                        return gameService.getGameTiles(game.data._id, true);
                     }]
                 }
             })
